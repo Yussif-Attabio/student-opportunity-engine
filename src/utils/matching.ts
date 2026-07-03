@@ -7,10 +7,14 @@ export interface MatchResult {
 
 export const calculateMatch = (
   opportunity: Opportunity,
-  profile: StudentProfile
+  profile: StudentProfile,
+  resumeHighlights: string[] = []
 ): MatchResult => {
   const scores: number[] = []
   const reasons: string[] = []
+  const normalizedResumeHighlights = resumeHighlights
+    .map((item) => item.trim().toLowerCase())
+    .filter(Boolean)
 
   // 1. Opportunity type match
   const typeMatch = profile.preferredOpportunityTypes.includes(opportunity.type)
@@ -34,9 +38,21 @@ export const calculateMatch = (
   }
 
   // 3. Skill match
+  const skillSignals = Array.from(
+    new Set([
+      ...profile.skills.map((skill) => skill.trim().toLowerCase()),
+      ...normalizedResumeHighlights
+    ])
+  )
   const matchedSkills = opportunity.requiredSkills.filter((skill) =>
-    profile.skills.some(
-      (profileSkill) => profileSkill.toLowerCase() === skill.toLowerCase()
+    skillSignals.some((signal) => signal === skill.toLowerCase())
+  )
+  const matchedResumeSkill = opportunity.requiredSkills.find((skill) =>
+    normalizedResumeHighlights.some(
+      (highlight) =>
+        highlight === skill.toLowerCase() ||
+        highlight.includes(skill.toLowerCase()) ||
+        skill.toLowerCase().includes(highlight)
     )
   )
   const skillMatchPercentage = Math.min(
@@ -47,12 +63,22 @@ export const calculateMatch = (
   if (matchedSkills.length > 0) {
     reasons.push(`You have ${matchedSkills.length} required skill${matchedSkills.length > 1 ? 's' : ''}`)
   }
+  if (matchedResumeSkill) {
+    reasons.push(`Matches resume highlight: ${matchedResumeSkill}`)
+  }
 
   // 4. Interest/Tag match
   const matchedTags = opportunity.tags.filter((tag) =>
-    profile.interests.some(
+    [...profile.interests, ...resumeHighlights].some(
       (interest) => tag.toLowerCase().includes(interest.toLowerCase()) ||
       interest.toLowerCase().includes(tag.toLowerCase())
+    )
+  )
+  const hasResumeTagMatch = opportunity.tags.some((tag) =>
+    normalizedResumeHighlights.some(
+      (highlight) =>
+        tag.toLowerCase().includes(highlight) ||
+        highlight.includes(tag.toLowerCase())
     )
   )
   const tagMatchPercentage = Math.min(
@@ -62,6 +88,9 @@ export const calculateMatch = (
   scores.push(tagMatchPercentage)
   if (matchedTags.length > 0) {
     reasons.push(`Aligns with your interests: ${matchedTags.slice(0, 2).join(', ')}`)
+  }
+  if (hasResumeTagMatch && !matchedResumeSkill) {
+    reasons.push('Your resume highlights align with this opportunity')
   }
 
   // 5. Location preference match

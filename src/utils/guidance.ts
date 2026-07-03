@@ -12,8 +12,13 @@ export interface Guidance {
 export const generateGuidance = (
   opp: Opportunity,
   profile: StudentProfile,
-  match: MatchResult
+  match: MatchResult,
+  resumeHighlights: string[] = []
 ): Guidance => {
+  const normalizedResumeHighlights = resumeHighlights
+    .map((item) => item.trim().toLowerCase())
+    .filter(Boolean)
+
   // Why apply
   const whyParts: string[] = []
   if (match.matchScore >= 80) {
@@ -25,6 +30,17 @@ export const generateGuidance = (
   }
   if (opp.compensation) whyParts.push(`Offers ${opp.compensation}.`)
   if (opp.duration) whyParts.push(`Duration: ${opp.duration}.`)
+  const matchedResumeSkills = opp.requiredSkills.filter((skill) =>
+    normalizedResumeHighlights.some(
+      (highlight) =>
+        highlight === skill.toLowerCase() ||
+        highlight.includes(skill.toLowerCase()) ||
+        skill.toLowerCase().includes(highlight)
+    )
+  )
+  if (matchedResumeSkills.length > 0) {
+    whyParts.push('Your resume highlights already line up with key requirements.')
+  }
 
   const why = whyParts.join(' ')
 
@@ -51,6 +67,9 @@ export const generateGuidance = (
   // tags / interests
   const matchedTags = opp.tags.filter((t) => profile.interests.some((i) => t.toLowerCase().includes(i.toLowerCase()) || i.toLowerCase().includes(t.toLowerCase())))
   if (matchedTags.length > 0) highlights.push(`Interests: ${matchedTags.slice(0, 3).join(', ')}`)
+  if (matchedResumeSkills.length > 0) {
+    highlights.push(`Resume highlights: ${matchedResumeSkills.slice(0, 2).join(', ')}`)
+  }
 
   if (highlights.length === 0) {
     // fallback suggestions
@@ -60,7 +79,11 @@ export const generateGuidance = (
 
   // Short resume/cover tip
   const keywords = Array.from(new Set([...(opp.requiredSkills || []), ...(opp.tags || [])])).slice(0, 5)
-  const tip = `Use keywords like ${keywords.join(', ')} where accurate; quantify impact (e.g., "improved X by Y"). Keep it concise.`
+  const resumeKeywordHint =
+    matchedResumeSkills.length > 0
+      ? ` Mention highlights like ${matchedResumeSkills.slice(0, 2).join(', ')} with a concrete project example.`
+      : ''
+  const tip = `Use keywords like ${keywords.join(', ')} where accurate; quantify impact (e.g., "improved X by Y"). Keep it concise.${resumeKeywordHint}`
 
   return {
     why,

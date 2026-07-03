@@ -442,12 +442,14 @@
 }
 
 .profile-form input,
-.profile-form select {
+.profile-form select,
+.profile-form textarea {
   padding: 10px 12px;
   border-radius: 8px;
   border: 1px solid var(--border);
   font-size: 14px;
   margin-top: 6px;
+  font-family: inherit;
 }
 
 .pref-types {

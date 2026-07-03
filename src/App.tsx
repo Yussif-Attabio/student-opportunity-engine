@@ -200,7 +200,7 @@ function App() {
   }
 
   const renderOpportunityCard = (opp: typeof sampleOpportunities[0]) => {
-    const match = calculateMatch(opp, profile)
+    const match = calculateMatch(opp, profile, parsedResumeHighlights)
     const matchColor = getMatchColor(match.matchScore)
 
     return (
@@ -314,8 +314,39 @@ function App() {
     return sampleStudentProfile as StudentProfile
   })
 
-  const currentGuidance = selectedOpportunity ? generateGuidance(selectedOpportunity, profile, calculateMatch(selectedOpportunity, profile)) : null
   const [profileSavedMessage, setProfileSavedMessage] = useState<string>('')
+
+  const [resumeFileName, setResumeFileName] = useState<string>(() => {
+    try {
+      const raw = localStorage.getItem('soe-resume-file-name')
+      return raw || ''
+    } catch {
+      return ''
+    }
+  })
+
+  const [resumeHighlights, setResumeHighlights] = useState<string>(() => {
+    try {
+      const raw = localStorage.getItem('soe-resume-highlights')
+      return raw || ''
+    } catch {
+      return ''
+    }
+  })
+  const [resumeInputKey, setResumeInputKey] = useState<number>(0)
+
+  const parsedResumeHighlights = resumeHighlights
+    .split(/[\n,]/)
+    .map((item) => item.trim())
+    .filter(Boolean)
+
+  const currentMatch = selectedOpportunity
+    ? calculateMatch(selectedOpportunity, profile, parsedResumeHighlights)
+    : null
+  const currentGuidance =
+    selectedOpportunity && currentMatch
+      ? generateGuidance(selectedOpportunity, profile, currentMatch, parsedResumeHighlights)
+      : null
 
   const saveProfileToStorage = (p: StudentProfile) => {
     try {
@@ -330,9 +361,37 @@ function App() {
 
   const resetProfileToSample = () => {
     setProfile(sampleStudentProfile as StudentProfile)
-    try { localStorage.removeItem('soe-profile') } catch {}
+    setResumeFileName('')
+    setResumeHighlights('')
+    setResumeInputKey((prev) => prev + 1)
+    try {
+      localStorage.removeItem('soe-profile')
+      localStorage.removeItem('soe-resume-file-name')
+      localStorage.removeItem('soe-resume-highlights')
+    } catch {}
     setProfileSavedMessage('Profile reset')
     setTimeout(() => setProfileSavedMessage(''), 3000)
+  }
+
+  const handleResumeUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setResumeFileName(file.name)
+      try {
+        localStorage.setItem('soe-resume-file-name', file.name)
+      } catch {}
+    }
+  }
+
+  const saveResumeHighlights = () => {
+    try {
+      localStorage.setItem('soe-resume-highlights', resumeHighlights)
+      setProfileSavedMessage('Resume highlights saved')
+      setTimeout(() => setProfileSavedMessage(''), 3000)
+    } catch {
+      setProfileSavedMessage('Failed to save resume highlights')
+      setTimeout(() => setProfileSavedMessage(''), 3000)
+    }
   }
 
   const allOpportunityTypes: OpportunityType[] = [
@@ -405,8 +464,8 @@ function App() {
         })
 
         const sortedOpportunities = [...filtered].sort((a, b) => {
-          const matchA = calculateMatch(a, profile)
-          const matchB = calculateMatch(b, profile)
+          const matchA = calculateMatch(a, profile, parsedResumeHighlights)
+          const matchB = calculateMatch(b, profile, parsedResumeHighlights)
           return matchB.matchScore - matchA.matchScore
         })
 
@@ -435,7 +494,7 @@ function App() {
                 <div className="dash-label">Due soon (≤14d)</div>
               </div>
               <div className="dash-item">
-                <div className="dash-value">{Math.max(0, ...sampleOpportunities.map((o) => calculateMatch(o, profile).matchScore))}%</div>
+                <div className="dash-value">{Math.max(0, ...sampleOpportunities.map((o) => calculateMatch(o, profile, parsedResumeHighlights).matchScore))}%</div>
                 <div className="dash-label">Highest match</div>
               </div>
               <div className="dash-helper">Tip: Edit your profile to improve matches. Use Save to bookmark opportunities.</div>
@@ -736,6 +795,32 @@ function App() {
                   <input value={profile.longTermGoal} onChange={(e) => setProfile({ ...profile, longTermGoal: e.target.value })} />
                 </label>
 
+                <div style={{ borderTop: '1px solid var(--border)', paddingTop: 16, marginTop: 16 }}>
+                  <label>
+                    Resume Upload
+                    <input key={resumeInputKey} type="file" accept=".pdf,.doc,.docx,.txt" onChange={handleResumeUpload} />
+                  </label>
+                  {resumeFileName && <p style={{ fontSize: 13, color: 'var(--text)', marginTop: 6 }}>✓ Resume uploaded: {resumeFileName}</p>}
+                </div>
+
+                <label>
+                  Resume Highlights / Key Skills
+                  <textarea
+                    value={resumeHighlights}
+                    onChange={(e) => setResumeHighlights(e.target.value)}
+                    placeholder="Paste or type key skills from your resume (e.g., Python, Project Management, Leadership)..."
+                    style={{ minHeight: 80 }}
+                  />
+                </label>
+
+                <button
+                  type="button"
+                  className="btn-clear"
+                  onClick={saveResumeHighlights}
+                >
+                  Save Resume Highlights
+                </button>
+
                 <div style={{ display: 'flex', gap: 8 }}>
                   <button
                     type="button"
@@ -766,6 +851,8 @@ function App() {
                 <p><strong>Availability:</strong> {profile.availability}</p>
                 <p><strong>Short-term:</strong> {profile.shortTermGoal}</p>
                 <p><strong>Long-term:</strong> {profile.longTermGoal}</p>
+                {resumeFileName && <p><strong>Resume:</strong> {resumeFileName}</p>}
+                {resumeHighlights && <p><strong>Resume highlights:</strong> {resumeHighlights.split(',').slice(0, 3).join(', ') || '—'}</p>}
                 {profileSavedMessage && <p style={{ marginTop: 12, color: 'var(--accent)' }}>{profileSavedMessage}</p>}
               </div>
             </div>
@@ -823,8 +910,8 @@ function App() {
               <h2 id="modal-title">{selectedOpportunity.title}</h2>
               <div className="modal-header-right">
                 <span className="opp-type-badge" style={{ backgroundColor: opportunityTypeColors[selectedOpportunity.type] }}>{opportunityTypeEmojis[selectedOpportunity.type]} {selectedOpportunity.type.replace('_', ' ')}</span>
-                <span className="badge match-badge" style={{ backgroundColor: getMatchColor(calculateMatch(selectedOpportunity, profile).matchScore), marginLeft: 8 }}>
-                  {calculateMatch(selectedOpportunity, profile).matchScore}%
+                <span className="badge match-badge" style={{ backgroundColor: getMatchColor(currentMatch?.matchScore ?? 0), marginLeft: 8 }}>
+                  {currentMatch?.matchScore ?? 0}%
                 </span>
                 {isSaved(selectedOpportunity.id) && (
                   <span className={`badge status-badge ${(appStatuses[selectedOpportunity.id] ?? 'Saved').toLowerCase()}`} style={{ marginLeft: 8 }}>{appStatuses[selectedOpportunity.id] ?? 'Saved'}</span>
@@ -872,11 +959,11 @@ function App() {
                 )}
               </div>
 
-              {calculateMatch(selectedOpportunity, profile).matchReasons.length > 0 && (
+              {currentMatch && currentMatch.matchReasons.length > 0 && (
                 <div style={{ marginTop: 12 }}>
                   <strong>Why it matches:</strong>
                   <ul>
-                    {calculateMatch(selectedOpportunity, profile).matchReasons.map((r, i) => <li key={i}>{r}</li>)}
+                    {currentMatch.matchReasons.map((r, i) => <li key={i}>{r}</li>)}
                   </ul>
                 </div>
               )}
