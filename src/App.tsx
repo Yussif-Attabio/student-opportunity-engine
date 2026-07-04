@@ -3,7 +3,7 @@ import './App.css'
 import { sampleOpportunities, sampleStudentProfile } from './data/opportunities'
 import type { OpportunityType, StudentProfile, Opportunity } from './types'
 import { calculateMatch, getMatchColor } from './utils/matching'
-import { generateGuidance } from './utils/guidance'
+import { useAIGuidance } from './hooks/useAIGuidance'
 
 type TabType = 'opportunities' | 'saved' | 'deadlines' | 'profile'
 
@@ -343,10 +343,13 @@ function App() {
   const currentMatch = selectedOpportunity
     ? calculateMatch(selectedOpportunity, profile, parsedResumeHighlights)
     : null
-  const currentGuidance =
-    selectedOpportunity && currentMatch
-      ? generateGuidance(selectedOpportunity, profile, currentMatch, parsedResumeHighlights)
-      : null
+
+  const { guidance: currentGuidance, loading: guidanceLoading, error: guidanceError } = useAIGuidance(
+    selectedOpportunity,
+    profile,
+    currentMatch,
+    parsedResumeHighlights
+  )
 
   const saveProfileToStorage = (p: StudentProfile) => {
     try {
@@ -968,23 +971,39 @@ function App() {
                 </div>
               )}
 
-              {currentGuidance && (
+              {guidanceLoading && (
                 <div className="ai-guidance" style={{ marginTop: 16 }}>
                   <h4 style={{ margin: '0 0 8px 0' }}>AI Application Guidance</h4>
+                 <p style={{ margin: '6px 0', fontStyle: 'italic', color: '#666' }}>⏳ Generating personalized guidance...</p>
+               </div>
+              )}
 
-                  <p style={{ margin: '6px 0' }}><strong>Why apply:</strong> {currentGuidance.why}</p>
+              {guidanceError && (
+               <div className="ai-guidance" style={{ marginTop: 16 }}>
+                 <h4 style={{ margin: '0 0 8px 0' }}>Application Guidance</h4>
+                 <p style={{ margin: '6px 0', color: '#d32f2f' }}>⚠️ {guidanceError}</p>
+               </div>
+              )}
 
-                  <p style={{ margin: '6px 0' }}><strong>Suggested next step:</strong> {currentGuidance.nextStep}</p>
+              {currentGuidance && !guidanceLoading && (
+               <div className="ai-guidance" style={{ marginTop: 16 }}>
+                 <h4 style={{ margin: '0 0 8px 0' }}>
+                   {currentGuidance.isAI ? '✨ AI Application Guidance' : 'Application Guidance'}
+                 </h4>
 
-                  <div style={{ margin: '8px 0' }}>
-                    <strong>What to highlight:</strong>
-                    <ul style={{ marginTop: 6 }}>
-                      {currentGuidance.highlights.map((h, idx) => <li key={idx}>{h}</li>)}
-                    </ul>
-                  </div>
+                 <p style={{ margin: '6px 0' }}><strong>Why apply:</strong> {currentGuidance.why}</p>
 
-                  <p style={{ margin: '6px 0' }}><strong>Resume/Cover tip:</strong> {currentGuidance.tip}</p>
-                </div>
+                 <p style={{ margin: '6px 0' }}><strong>Suggested next step:</strong> {currentGuidance.nextStep}</p>
+
+                 <div style={{ margin: '8px 0' }}>
+                   <strong>What to highlight:</strong>
+                   <ul style={{ marginTop: 6 }}>
+                     {currentGuidance.highlights.map((h, idx) => <li key={idx}>{h}</li>)}
+                   </ul>
+                 </div>
+
+                 <p style={{ margin: '6px 0' }}><strong>Resume/Cover tip:</strong> {currentGuidance.tip}</p>
+               </div>
               )}
 
             </div>
