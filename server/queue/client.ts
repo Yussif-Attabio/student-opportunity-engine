@@ -25,13 +25,19 @@ export class IngestionQueueClient implements ClassificationDispatcher {
     this.appUrl = getAppUrl()
   }
 
-  async enqueueSource(sourceId: string) {
+  async enqueueSource(
+    sourceId: string,
+    options: { deduplicate?: boolean } = {}
+  ) {
+    const deduplicate = options.deduplicate ?? true
     return this.client.publishJSON({
       url: `${this.appUrl}/api/internal/jobs/sync-source`,
       body: { sourceId },
       retries: 5,
       failureCallback: `${this.appUrl}/api/internal/jobs/failure-callback`,
-      deduplicationId: `source-${sourceId}-${Math.floor(Date.now() / 900_000)}`,
+      deduplicationId: deduplicate
+        ? `source-${sourceId}-${Math.floor(Date.now() / 900_000)}`
+        : undefined,
       flowControl: {
         key: 'source-sync',
         parallelism: positiveInteger(process.env.SYNC_PROVIDER_CONCURRENCY, 3)

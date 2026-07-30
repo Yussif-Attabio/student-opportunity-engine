@@ -3,11 +3,14 @@ import { IngestionQueueClient } from '../server/queue/client.js'
 import { SourceRepository } from '../server/sources/source-repository.js'
 
 const run = async () => {
-  const sources = await new SourceRepository(getDatabase()).listDue(new Date(), 100)
+  const repository = new SourceRepository(getDatabase())
+  const sources = process.argv.includes('--all')
+    ? (await repository.list()).filter((source) => source.enabled)
+    : await repository.listDue(new Date(), 100)
   const queue = new IngestionQueueClient()
   const results = await Promise.all(
     sources.map(async (source) => {
-      const message = await queue.enqueueSource(source.id)
+      const message = await queue.enqueueSource(source.id, { deduplicate: false })
       return { sourceId: source.id, messageId: message.messageId }
     })
   )

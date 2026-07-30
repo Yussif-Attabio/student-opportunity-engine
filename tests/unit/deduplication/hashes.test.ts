@@ -14,6 +14,14 @@ describe('opportunity identity', () => {
     ).toBe('https://jobs.example.com/role?id=2&team=eng')
   })
 
+  it('preserves Greenhouse job IDs while removing source tracking', () => {
+    expect(
+      canonicalizeApplicationUrl(
+        'https://example.com/jobs/search?gh_jid=12345&gh_src=campaign'
+      )
+    ).toBe('https://example.com/jobs/search?gh_jid=12345')
+  })
+
   it('produces the same fingerprint for cosmetic text and location differences', () => {
     const first = createOpportunityFingerprint({
       organizationName: 'Example & Company',

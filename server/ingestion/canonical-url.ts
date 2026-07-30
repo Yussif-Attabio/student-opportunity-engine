@@ -1,7 +1,6 @@
 const TRACKING_PARAMETERS = new Set([
   'fbclid',
   'gclid',
-  'gh_jid',
   'gh_src',
   'lever-origin',
   'lever-source',
