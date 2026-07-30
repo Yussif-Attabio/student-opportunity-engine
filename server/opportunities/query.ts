@@ -16,6 +16,13 @@ import type { OpportunityFilters } from './filters.js'
 
 type Database = ReturnType<typeof getDatabase>
 
+export class InvalidOpportunityCursorError extends Error {
+  constructor() {
+    super('Invalid opportunity cursor')
+    this.name = 'InvalidOpportunityCursorError'
+  }
+}
+
 const sortTimestamp = sql<Date | string>`coalesce(${opportunities.datePosted}, ${opportunities.firstSeenAt})`
 
 const decodeCursor = (cursor: string | undefined) => {
@@ -25,10 +32,10 @@ const decodeCursor = (cursor: string | undefined) => {
     id?: unknown
   }
   if (typeof parsed.timestamp !== 'string' || typeof parsed.id !== 'string') {
-    throw new Error('Invalid opportunity cursor')
+    throw new InvalidOpportunityCursorError()
   }
   const timestamp = new Date(parsed.timestamp)
-  if (Number.isNaN(timestamp.getTime())) throw new Error('Invalid opportunity cursor')
+  if (Number.isNaN(timestamp.getTime())) throw new InvalidOpportunityCursorError()
   return { timestamp: timestamp.toISOString(), id: parsed.id }
 }
 
@@ -55,6 +62,7 @@ export const publicOpportunitySelection = {
   opportunityType: opportunities.opportunityType,
   employmentType: opportunities.employmentType,
   experienceLevel: opportunities.experienceLevel,
+  careerField: opportunities.careerField,
   departments: opportunities.departments,
   teams: opportunities.teams,
   locations: opportunities.locations,
@@ -108,6 +116,12 @@ export const queryOpportunities = async (
     conditions.push(
       sql`array_to_string(${opportunities.locations}, ' ') ilike ${`%${filters.location}%`}`
     )
+  }
+  if (filters.country) {
+    conditions.push(eq(opportunities.country, filters.country))
+  }
+  if (filters.careerField) {
+    conditions.push(eq(opportunities.careerField, filters.careerField))
   }
   if (filters.remoteStatus) {
     conditions.push(eq(opportunities.remoteStatus, filters.remoteStatus))

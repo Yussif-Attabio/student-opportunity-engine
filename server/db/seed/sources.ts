@@ -39,6 +39,71 @@ export const verifiedSeedSources: CreateSourceInput[] = [
         'https://developers.ashbyhq.com/docs/public-job-posting-api'
     }
   },
+  {
+    organizationName: 'Anthropic',
+    sourceType: 'GREENHOUSE',
+    sourceIdentifier: 'anthropic',
+    careersUrl: 'https://boards.greenhouse.io/anthropic',
+    enabled: true,
+    syncFrequencyMinutes: 360,
+    metadata: {
+      verifiedAt: '2026-07-30',
+      focus: ['FELLOWSHIP', 'PUBLIC_POLICY', 'RESEARCH'],
+      publicApiDocumentation: 'https://developers.greenhouse.io/job-board.html'
+    }
+  },
+  {
+    organizationName: 'One Acre Fund',
+    sourceType: 'GREENHOUSE',
+    sourceIdentifier: 'oneacrefund',
+    careersUrl: 'https://oneacrefund.org/careers/',
+    enabled: true,
+    syncFrequencyMinutes: 360,
+    metadata: {
+      verifiedAt: '2026-07-30',
+      focus: ['AGRICULTURE', 'NONPROFIT', 'COMMUNICATIONS', 'OPERATIONS'],
+      publicApiDocumentation: 'https://developers.greenhouse.io/job-board.html'
+    }
+  },
+  {
+    organizationName: 'Human Rights Watch',
+    sourceType: 'GREENHOUSE',
+    sourceIdentifier: 'humanrightswatch',
+    careersUrl: 'https://www.hrw.org/careers',
+    enabled: true,
+    syncFrequencyMinutes: 360,
+    metadata: {
+      verifiedAt: '2026-07-30',
+      focus: ['NONPROFIT', 'PUBLIC_POLICY', 'HUMAN_RIGHTS'],
+      publicApiDocumentation: 'https://developers.greenhouse.io/job-board.html'
+    }
+  },
+  {
+    organizationName: 'ProPublica',
+    sourceType: 'GREENHOUSE',
+    sourceIdentifier: 'propublica',
+    careersUrl: 'https://www.propublica.org/jobs',
+    enabled: true,
+    syncFrequencyMinutes: 360,
+    metadata: {
+      verifiedAt: '2026-07-30',
+      focus: ['JOURNALISM', 'MEDIA', 'FELLOWSHIP'],
+      publicApiDocumentation: 'https://developers.greenhouse.io/job-board.html'
+    }
+  },
+  {
+    organizationName: 'ACLU',
+    sourceType: 'GREENHOUSE',
+    sourceIdentifier: 'aclu',
+    careersUrl: 'https://www.aclu.org/careers/',
+    enabled: true,
+    syncFrequencyMinutes: 360,
+    metadata: {
+      verifiedAt: '2026-07-30',
+      focus: ['LAW', 'PUBLIC_POLICY', 'FELLOWSHIP'],
+      publicApiDocumentation: 'https://developers.greenhouse.io/job-board.html'
+    }
+  },
   ...([
     ['Airbnb', 'airbnb', 'https://careers.airbnb.com/'],
     ['Cloudflare', 'cloudflare', 'https://www.cloudflare.com/careers/'],

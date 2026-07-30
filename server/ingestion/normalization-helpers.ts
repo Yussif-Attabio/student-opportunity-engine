@@ -100,7 +100,7 @@ export const inferOpportunityType = (
   const text = `${title} ${employmentType ?? ''}`.toLowerCase()
   if (/\bco[- ]?op\b/.test(text)) return 'CO_OP'
   if (/\bapprentice(?:ship)?\b/.test(text)) return 'APPRENTICESHIP'
-  if (/\bfellow(?:ship)?\b/.test(text)) return 'FELLOWSHIP'
+  if (/\b(?:fellows?|fellowships?)\b/.test(text)) return 'FELLOWSHIP'
   if (/\bintern(?:ship)?\b/.test(text)) return 'INTERNSHIP'
   if (/new grad|university graduate/.test(text)) return 'NEW_GRAD_JOB'
   return 'UNKNOWN'

@@ -11,11 +11,20 @@ const POSITIVE_INDICATORS = [
   { label: 'co-op', pattern: /\bco[- ]op\b/i },
   { label: 'new graduate', pattern: /\bnew graduates?\b/i },
   { label: 'university graduate', pattern: /\buniversity graduates?\b/i },
+  { label: 'recent graduate', pattern: /\brecent graduates?\b/i },
+  { label: 'undergraduate student', pattern: /\bundergraduate students?\b/i },
+  { label: 'college student', pattern: /\bcollege students?\b/i },
   { label: 'early career', pattern: /\bearly[- ]career\b/i },
   { label: 'entry level', pattern: /\bentry[- ]level\b/i },
   { label: 'apprentice', pattern: /\bapprentice(?:ship)?\b/i },
+  { label: 'fellow', pattern: /\bfellows?\b/i },
   { label: 'fellowship', pattern: /\bfellowship\b/i },
   { label: 'student researcher', pattern: /\bstudent researchers?\b/i },
+  { label: 'student nurse', pattern: /\bstudent nurses?\b/i },
+  { label: 'summer analyst', pattern: /\bsummer analysts?\b/i },
+  { label: 'summer associate', pattern: /\bsummer associates?\b/i },
+  { label: 'graduate trainee', pattern: /\bgraduate trainees?\b/i },
+  { label: 'externship', pattern: /\bexternship\b/i },
   { label: 'campus program', pattern: /\bcampus program\b/i },
   { label: 'rotational program', pattern: /\brotational program\b/i },
   { label: 'zero to two years', pattern: /\bzero to two years\b/i },
@@ -45,9 +54,18 @@ export const evaluateDeterministicEligibility = (
   const negativeIndicators = NEGATIVE_INDICATORS.filter(({ pattern }) =>
     pattern.test(content)
   ).map(({ label }) => label)
+  const titlePositiveIndicators = POSITIVE_INDICATORS.filter(({ pattern }) =>
+    pattern.test(title)
+  )
+  const titleNegativeIndicators = NEGATIVE_INDICATORS.filter(({ pattern }) =>
+    pattern.test(title)
+  )
   const score = positiveIndicators.length - negativeIndicators.length
 
-  if (score >= 1 && positiveIndicators.length > negativeIndicators.length) {
+  if (
+    (titlePositiveIndicators.length > 0 && titleNegativeIndicators.length === 0) ||
+    (score >= 1 && positiveIndicators.length > negativeIndicators.length)
+  ) {
     return {
       studentEligible: true,
       confidence: Math.min(0.95, 0.65 + positiveIndicators.length * 0.08),

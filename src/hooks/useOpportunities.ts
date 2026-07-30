@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { sampleOpportunities } from '../data/opportunities'
-import type { Opportunity } from '../types'
+import type { CareerField, Opportunity } from '../types'
 
 interface JobsFeedResponse {
   opportunities: Opportunity[]
@@ -17,9 +17,11 @@ interface PersistedOpportunity {
   descriptionText: string | null
   studentFacingSummary: string | null
   opportunityType: string
+  careerField: CareerField
   departments: string[]
   teams: string[]
   locations: string[]
+  country: string | null
   remoteStatus: string
   applicationUrl: string
   applicationDeadline: string | null
@@ -36,6 +38,11 @@ interface PersistedOpportunity {
 interface PersistedOpportunityResponse {
   items: PersistedOpportunity[]
   nextCursor: string | null
+}
+
+interface OpportunityFeedFilters {
+  country?: string
+  careerField?: CareerField
 }
 
 const DESCRIPTION_SUMMARY_MAX_LENGTH = 280
@@ -89,6 +96,8 @@ const mapPersistedOpportunity = (
   type: toOpportunityType(opportunity.opportunityType),
   source: opportunity.organizationName,
   location: opportunity.locations.join(', ') || 'Location not listed',
+  country: opportunity.country ?? undefined,
+  careerField: opportunity.careerField,
   deadline: opportunity.applicationDeadline ?? '',
   description: summarizeDescription(
     opportunity.studentFacingSummary ?? opportunity.descriptionText
@@ -116,37 +125,81 @@ const mapPersistedOpportunity = (
   compensation: formatCompensation(opportunity)
 })
 
-export const useOpportunities = () => {
+export const useOpportunities = (filters: OpportunityFeedFilters = {}) => {
   const [opportunities, setOpportunities] = useState<Opportunity[]>(sampleOpportunities)
+  const [availableCountries, setAvailableCountries] = useState<string[]>([])
   const [providers, setProviders] = useState<string[]>([])
   const [warnings, setWarnings] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
   const [usingFallback, setUsingFallback] = useState(false)
+  const activeRequest = useRef<AbortController | null>(null)
 
   const loadOpportunities = useCallback(async (forceRefresh = false) => {
+    activeRequest.current?.abort()
+    const controller = new AbortController()
+    activeRequest.current = controller
     setLoading(true)
     try {
-      const persistedResponse = await fetch(
-        `/api/opportunities?limit=100&studentEligible=true${
-          forceRefresh ? `&refresh=${Date.now()}` : ''
-        }`
-      )
-      if (persistedResponse.ok) {
+      const persistedItems: PersistedOpportunity[] = []
+      let cursor: string | null = null
+      let persistedFeedAvailable = false
+
+      const seenCursors = new Set<string>()
+      do {
+        const params = new URLSearchParams({
+          limit: '100',
+          studentEligible: 'true'
+        })
+        if (cursor) params.set('cursor', cursor)
+        if (filters.country) params.set('country', filters.country)
+        if (filters.careerField) params.set('careerField', filters.careerField)
+        if (forceRefresh) params.set('refresh', String(Date.now()))
+
+        const persistedResponse = await fetch(`/api/opportunities?${params}`, {
+          signal: controller.signal
+        })
+        if (!persistedResponse.ok) break
+        persistedFeedAvailable = true
         const persisted =
           (await persistedResponse.json()) as PersistedOpportunityResponse
-        if (Array.isArray(persisted.items) && persisted.items.length > 0) {
-          setOpportunities(persisted.items.map(mapPersistedOpportunity))
-          setProviders([
-            ...new Set(persisted.items.map(({ organizationName }) => organizationName))
-          ])
-          setWarnings([])
-          setUsingFallback(false)
-          return
+        if (!Array.isArray(persisted.items)) break
+        persistedItems.push(...persisted.items)
+        cursor = persisted.nextCursor
+        if (cursor && seenCursors.has(cursor)) break
+        if (cursor) seenCursors.add(cursor)
+      } while (cursor)
+
+      if (persistedItems.length > 0) {
+        if (activeRequest.current !== controller) return
+        if (!filters.country && !filters.careerField) {
+          setAvailableCountries([
+            ...new Set(
+              persistedItems
+                .map(({ country }) => country)
+                .filter((country): country is string => Boolean(country))
+            )
+          ].sort())
         }
+        setOpportunities(persistedItems.map(mapPersistedOpportunity))
+        setProviders([
+          ...new Set(persistedItems.map(({ organizationName }) => organizationName))
+        ])
+        setWarnings([])
+        setUsingFallback(false)
+        return
+      }
+      if (persistedFeedAvailable && (filters.country || filters.careerField)) {
+        if (activeRequest.current !== controller) return
+        setOpportunities([])
+        setProviders([])
+        setWarnings([])
+        setUsingFallback(false)
+        return
       }
 
       const compatibilityResponse = await fetch(
-        `/api/jobs${forceRefresh ? '?refresh=1' : ''}`
+        `/api/jobs${forceRefresh ? '?refresh=1' : ''}`,
+        { signal: controller.signal }
       )
       if (!compatibilityResponse.ok) {
         throw new Error(`Jobs API returned ${compatibilityResponse.status}`)
@@ -155,6 +208,7 @@ export const useOpportunities = () => {
       if (!Array.isArray(feed.opportunities) || feed.opportunities.length === 0) {
         throw new Error('No live jobs were returned')
       }
+      if (activeRequest.current !== controller) return
       setOpportunities(feed.opportunities)
       setProviders(Array.isArray(feed.providers) ? feed.providers : [])
       setWarnings([
@@ -162,25 +216,33 @@ export const useOpportunities = () => {
         ...(Array.isArray(feed.warnings) ? feed.warnings : [])
       ])
       setUsingFallback(false)
-    } catch {
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') return
+      if (activeRequest.current !== controller) return
       setOpportunities(sampleOpportunities)
       setProviders([])
       setWarnings(['Live providers are unavailable. Showing sample opportunities.'])
       setUsingFallback(true)
     } finally {
-      setLoading(false)
+      if (activeRequest.current === controller) setLoading(false)
     }
-  }, [])
+  }, [filters.careerField, filters.country])
 
   useEffect(() => {
     const timeout = window.setTimeout(() => {
       void loadOpportunities()
     }, 0)
-    return () => window.clearTimeout(timeout)
+    return () => {
+      window.clearTimeout(timeout)
+      const request = activeRequest.current
+      request?.abort()
+      if (activeRequest.current === request) activeRequest.current = null
+    }
   }, [loadOpportunities])
 
   return {
     opportunities,
+    availableCountries,
     providers,
     warnings,
     loading,

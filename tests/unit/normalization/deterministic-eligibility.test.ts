@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { evaluateDeterministicEligibility } from '../../../server/ingestion/deterministic-eligibility.js'
+import { inferOpportunityType } from '../../../server/ingestion/normalization-helpers.js'
 
 describe('deterministic eligibility', () => {
   it('recognizes strong student indicators in the full posting', () => {
@@ -34,5 +35,40 @@ describe('deterministic eligibility', () => {
     )
     expect(result.positiveIndicators).not.toContain('intern')
     expect(result.studentEligible).toBeNull()
+  })
+
+  it('recognizes student language used by non-technical fields', () => {
+    expect(
+      evaluateDeterministicEligibility(
+        'Summer Finance Analyst',
+        'This program is designed for undergraduate students.'
+      ).studentEligible
+    ).toBe(true)
+    expect(
+      evaluateDeterministicEligibility(
+        'Clinical Externship',
+        'A supervised opportunity for student nurses.'
+      ).studentEligible
+    ).toBe(true)
+    expect(
+      evaluateDeterministicEligibility(
+        'Local Reporting Network Fellow',
+        'Work with editors and senior newsroom leaders.'
+      ).studentEligible
+    ).toBe(true)
+  })
+
+  it('does not approve a senior title from a fellow keyword alone', () => {
+    expect(
+      evaluateDeterministicEligibility(
+        'Senior Research Fellow',
+        'Requires extensive professional experience.'
+      ).studentEligible
+    ).toBeNull()
+  })
+
+  it('normalizes fellow and fellows-program titles as fellowships', () => {
+    expect(inferOpportunityType('Reporting Fellow')).toBe('FELLOWSHIP')
+    expect(inferOpportunityType('Anthropic Fellows Program')).toBe('FELLOWSHIP')
   })
 })

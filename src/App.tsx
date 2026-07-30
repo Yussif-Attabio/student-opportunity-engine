@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react'
 import './App.css'
-import { sampleStudentProfile } from './data/opportunities'
-import type { OpportunityType, StudentProfile, Opportunity } from './types'
+import { emptyStudentProfile } from './data/opportunities'
+import type { CareerField, OpportunityType, StudentProfile, Opportunity } from './types'
 import { calculateMatch, getMatchColor } from './utils/matching'
 import { useAIGuidance } from './hooks/useAIGuidance'
 import ResumeBuilder from './components/ResumeBuilder'
 import { useOpportunities } from './hooks/useOpportunities'
+import { diversifyOpportunities } from './utils/diversifyOpportunities'
 
 type TabType = 'opportunities' | 'saved' | 'deadlines' | 'resume' | 'profile'
 
@@ -35,7 +36,12 @@ const opportunityTypeColors: Record<OpportunityType, string> = {
 
 function App() {
   const [activeTab, setActiveTab] = useState<TabType>('opportunities')
-  const { opportunities } = useOpportunities()
+  const [countryFilter, setCountryFilter] = useState<string>('all')
+  const [careerFieldFilter, setCareerFieldFilter] = useState<'all' | CareerField>('all')
+  const { opportunities, availableCountries } = useOpportunities({
+    country: countryFilter === 'all' ? undefined : countryFilter,
+    careerField: careerFieldFilter === 'all' ? undefined : careerFieldFilter
+  })
   const SAVED_KEY = 'soe-saved-opportunity-ids'
   const STATUS_KEY = 'soe-application-statuses'
   const APPLY_KEY = 'soe-apply-clicked-ids'
@@ -150,7 +156,7 @@ function App() {
   const savedOpportunities = opportunities.filter((opp) => isSaved(opp.id))
 
   // profile state used for matching
-  // profile initialized from sampleStudentProfile
+  // Open shared links after the opportunity feed has loaded.
 
 
   const [selectedOpportunity, setSelectedOpportunity] = useState<Opportunity | null>(null)
@@ -340,7 +346,7 @@ function App() {
     } catch (e) {
       // ignore parse errors
     }
-    return sampleStudentProfile as StudentProfile
+    return emptyStudentProfile as StudentProfile
   })
 
   const [profileSavedMessage, setProfileSavedMessage] = useState<string>('')
@@ -392,7 +398,7 @@ function App() {
   }
 
   const resetProfileToSample = () => {
-    setProfile(sampleStudentProfile as StudentProfile)
+    setProfile(emptyStudentProfile as StudentProfile)
     setResumeFileName('')
     setResumeHighlights('')
     setResumeInputKey((prev) => prev + 1)
@@ -442,6 +448,8 @@ function App() {
     setSearchQuery('')
     setFilterType('all')
     setFilterLocation('any')
+    setCountryFilter('all')
+    setCareerFieldFilter('all')
     setDeadlineUrgency('all')
     setWorkplaceFilter('all')
     setRoleLevelFilter('all')
@@ -482,7 +490,6 @@ function App() {
           if (filterLocation !== 'any') {
             if (!opp.location.toLowerCase().includes(filterLocation.toLowerCase())) return false
           }
-
           const workplaceText = `${opp.location} ${opp.title} ${opp.tags.join(' ')}`.toLowerCase()
           if (workplaceFilter === 'remote' && !workplaceText.includes('remote')) return false
           if (workplaceFilter === 'hybrid' && !workplaceText.includes('hybrid')) return false
@@ -530,11 +537,11 @@ function App() {
           return true
         })
 
-        const sortedOpportunities = [...filtered].sort((a, b) => {
-          const matchA = calculateMatch(a, profile, parsedResumeHighlights)
-          const matchB = calculateMatch(b, profile, parsedResumeHighlights)
-          return matchB.matchScore - matchA.matchScore
-        })
+        const sortedOpportunities = diversifyOpportunities(
+          filtered,
+          (opportunity) =>
+            calculateMatch(opportunity, profile, parsedResumeHighlights).matchScore
+        )
 
         return (
           <div className="tab-content">
@@ -593,6 +600,39 @@ function App() {
                 {locations.map((loc) => (
                   <option key={loc} value={loc}>{loc}</option>
                 ))}
+              </select>
+
+              <select
+                className="filter-select"
+                value={countryFilter}
+                onChange={(e) => setCountryFilter(e.target.value)}
+              >
+                <option value="all">All countries</option>
+                {availableCountries.map((country) => (
+                  <option key={country} value={country}>{country}</option>
+                ))}
+              </select>
+
+              <select
+                className="filter-select"
+                value={careerFieldFilter}
+                onChange={(e) => setCareerFieldFilter(e.target.value as typeof careerFieldFilter)}
+              >
+                <option value="all">All career fields</option>
+                <option value="BUSINESS">Business &amp; sales</option>
+                <option value="FINANCE_ACCOUNTING">Finance &amp; accounting</option>
+                <option value="HEALTHCARE">Healthcare</option>
+                <option value="MARKETING_COMMUNICATIONS">Marketing &amp; communications</option>
+                <option value="DESIGN_CREATIVE">Design &amp; creative</option>
+                <option value="EDUCATION">Education</option>
+                <option value="SCIENCE_RESEARCH">Science &amp; research</option>
+                <option value="LAW_GOVERNMENT_POLICY">Law, government &amp; policy</option>
+                <option value="OPERATIONS_LOGISTICS">Operations &amp; logistics</option>
+                <option value="HOSPITALITY">Hospitality</option>
+                <option value="SKILLED_TRADES">Skilled trades</option>
+                <option value="ENGINEERING">Engineering</option>
+                <option value="TECHNOLOGY">Technology</option>
+                <option value="OTHER">Other</option>
               </select>
 
               <select className="filter-select" value={deadlineUrgency} onChange={(e) => setDeadlineUrgency(e.target.value as any)}>

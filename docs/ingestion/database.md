@@ -18,6 +18,10 @@ Migration `0003_light_redwing.sql` adds the non-destructive `STRUCTURED_DATA` an
 `CUSTOM_SCRAPER` source types and a `teams` array on opportunities. Existing source
 types and opportunity records remain valid.
 
+Migration `0004_keen_risque.sql` adds the normalized career-field taxonomy, backfills
+existing opportunities, normalizes common country codes, and adds active-feed indexes
+for country and career field.
+
 Never point automated tests at a shared database. Set `DATABASE_TEST_URL` to an isolated
 disposable PostgreSQL database; integration tests are skipped when it is absent.
 

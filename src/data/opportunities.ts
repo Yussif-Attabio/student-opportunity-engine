@@ -234,3 +234,19 @@ export const sampleStudentProfile = {
   longTermGoal: 'Build a startup focused on AI for social good',
   savedOpportunities: []
 }
+
+export const emptyStudentProfile = {
+  id: 'local-student',
+  name: '',
+  school: '',
+  major: '',
+  year: 'freshman' as const,
+  interests: [],
+  skills: [],
+  preferredOpportunityTypes: [] as OpportunityType[],
+  locationPreference: 'any',
+  availability: '',
+  shortTermGoal: '',
+  longTermGoal: '',
+  savedOpportunities: []
+}

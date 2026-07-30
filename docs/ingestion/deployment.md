@@ -16,6 +16,6 @@ default is 2 MiB.
 QStash signing requires `APP_URL` to exactly match the public deployment URL. Rotate
 signing keys by configuring both current and next keys before promotion.
 
-Public search supports keyword, type, company, location, remote status, major,
-graduation year, skills, date posted, student eligibility, sponsorship, cursor, and
-bounded page size filters.
+Public search supports keyword, type, company, location, country, career field, remote
+status, major, graduation year, skills, date posted, student eligibility, sponsorship,
+cursor, and bounded page size filters.

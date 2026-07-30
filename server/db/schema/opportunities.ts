@@ -14,6 +14,7 @@ import {
   uuid
 } from 'drizzle-orm/pg-core'
 import {
+  careerFieldEnum,
   classificationStatusEnum,
   educationLevelEnum,
   employmentTypeEnum,
@@ -45,6 +46,7 @@ export const opportunities = pgTable(
     opportunityType: opportunityTypeEnum('opportunity_type').notNull().default('UNKNOWN'),
     employmentType: employmentTypeEnum('employment_type').notNull().default('UNKNOWN'),
     experienceLevel: experienceLevelEnum('experience_level').notNull().default('UNKNOWN'),
+    careerField: careerFieldEnum('career_field').notNull().default('UNKNOWN'),
     departments: text('departments').array().notNull().default(sql`ARRAY[]::text[]`),
     teams: text('teams').array().notNull().default(sql`ARRAY[]::text[]`),
     locations: text('locations').array().notNull().default(sql`ARRAY[]::text[]`),
@@ -105,6 +107,8 @@ export const opportunities = pgTable(
       table.datePosted
     ),
     index('opportunities_type_active_idx').on(table.opportunityType, table.isActive),
+    index('opportunities_field_active_idx').on(table.careerField, table.isActive),
+    index('opportunities_country_active_idx').on(table.country, table.isActive),
     index('opportunities_remote_active_idx').on(table.remoteStatus, table.isActive),
     index('opportunities_source_active_idx').on(table.sourceId, table.isActive),
     index('opportunities_locations_gin_idx').using('gin', table.locations),

@@ -40,3 +40,9 @@ authentication, CAPTCHA, rate limits, robots policy, or terms.
 
 `npm run sources:test-public` is an optional network smoke test for verified seed
 identifiers. It is not part of deterministic automated tests.
+
+The verified production seed set includes student-focused non-technical coverage from
+One Acre Fund, Human Rights Watch, ProPublica, and the ACLU, plus Anthropic fellowships.
+Identifiers and `verifiedAt` dates are stored with each seed. A provider is not seeded
+only because it has non-technical jobs; it must have a current student, intern,
+apprentice, new-graduate, or fellowship signal and fit response-size safety limits.

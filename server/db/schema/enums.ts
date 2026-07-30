@@ -72,6 +72,24 @@ export const remoteStatusEnum = pgEnum('remote_status', [
   'UNKNOWN'
 ])
 
+export const careerFieldEnum = pgEnum('career_field', [
+  'TECHNOLOGY',
+  'ENGINEERING',
+  'BUSINESS',
+  'FINANCE_ACCOUNTING',
+  'HEALTHCARE',
+  'MARKETING_COMMUNICATIONS',
+  'DESIGN_CREATIVE',
+  'EDUCATION',
+  'SCIENCE_RESEARCH',
+  'LAW_GOVERNMENT_POLICY',
+  'OPERATIONS_LOGISTICS',
+  'HOSPITALITY',
+  'SKILLED_TRADES',
+  'OTHER',
+  'UNKNOWN'
+])
+
 export const salaryPeriodEnum = pgEnum('salary_period', [
   'HOUR',
   'DAY',

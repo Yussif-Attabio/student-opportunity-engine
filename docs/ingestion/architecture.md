@@ -15,6 +15,10 @@ Provider adapters are isolated behind `OpportunitySourceAdapter`. The shared syn
 does not contain Greenhouse, Lever, Ashby, Adzuna, or JSON-LD response logic. Built-in
 API adapters construct requests only for fixed HTTPS allowlisted provider hosts.
 
+The shared upsert layer deterministically assigns a broad career field and normalizes
+common country names and ISO codes. This keeps provider-specific labels out of public
+filters and allows unchanged records to receive taxonomy improvements on later syncs.
+
 `STRUCTURED_DATA` sources point to one explicitly registered HTTPS career page. The
 safe page client verifies the exact hostname, rejects private and reserved DNS results,
 checks robots.txt, follows only bounded redirects to explicitly approved hosts, sends

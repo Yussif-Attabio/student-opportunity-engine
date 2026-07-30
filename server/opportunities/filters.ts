@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { careerFields } from '../ingestion/opportunity-taxonomy.js'
 
 const singleQueryValue = z.preprocess(
   (value) => (Array.isArray(value) ? value[0] : value),
@@ -32,6 +33,8 @@ export const opportunityFiltersSchema = z.object({
   ),
   company: singleQueryValue,
   location: singleQueryValue,
+  country: singleQueryValue.pipe(z.string().trim().min(1).max(100).optional()),
+  careerField: singleQueryValue.pipe(z.enum(careerFields).optional()),
   remoteStatus: singleQueryValue.pipe(
     z.enum(['REMOTE', 'HYBRID', 'ONSITE', 'FLEXIBLE', 'UNKNOWN']).optional()
   ),

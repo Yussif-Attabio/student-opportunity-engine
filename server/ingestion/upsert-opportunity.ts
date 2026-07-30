@@ -4,6 +4,7 @@ import { opportunities } from '../db/schema/opportunities.js'
 import type { NormalizedOpportunity } from './contracts.js'
 import { canonicalizeApplicationUrl } from './canonical-url.js'
 import { evaluateDeterministicEligibility } from './deterministic-eligibility.js'
+import { inferCareerField, normalizeCountry } from './opportunity-taxonomy.js'
 import {
   createOpportunityContentHash,
   createOpportunityFingerprint
@@ -38,6 +39,8 @@ export const upsertOpportunity = async (
   const canonicalApplicationUrl = canonicalizeApplicationUrl(normalized.applicationUrl)
   const fingerprint = createOpportunityFingerprint(normalized)
   const contentHash = createOpportunityContentHash(normalized)
+  const careerField = inferCareerField(normalized)
+  const country = normalizeCountry(normalized.country, normalized.locations)
   const eligibility = evaluateDeterministicEligibility(
     normalized.title,
     normalized.descriptionText
@@ -89,6 +92,8 @@ export const upsertOpportunity = async (
         .insert(opportunities)
         .values({
           ...normalized,
+          careerField,
+          country,
           canonicalApplicationUrl,
           contentHash,
           fingerprint,
@@ -131,6 +136,10 @@ export const upsertOpportunity = async (
     }
 
     if (existing.contentHash === contentHash) {
+      const shouldQueueClassification =
+        classificationRequired &&
+        (existing.classificationStatus === 'FAILED' ||
+          existing.classificationStatus === 'SKIPPED')
       await transaction
         .update(opportunities)
         .set({
@@ -149,10 +158,14 @@ export const upsertOpportunity = async (
           classificationStatus:
             existing.classificationStatus === 'SUCCEEDED'
               ? undefined
-              : classificationRequired
+              : shouldQueueClassification
+                ? 'PENDING'
+                : classificationRequired
                 ? existing.classificationStatus
                 : 'SKIPPED',
           rawSourceData: normalized.rawSourceData,
+          careerField,
+          country,
           updatedAt: now
         })
         .where(eq(opportunities.id, existing.id))
@@ -160,8 +173,7 @@ export const upsertOpportunity = async (
         id: existing.id,
         outcome: 'unchanged',
         duplicateDetected: false,
-        classificationRequired:
-          classificationRequired && existing.classificationStatus === 'FAILED'
+        classificationRequired: shouldQueueClassification
       }
     }
 
@@ -169,6 +181,8 @@ export const upsertOpportunity = async (
       .update(opportunities)
       .set({
         ...normalized,
+        careerField,
+        country,
         canonicalApplicationUrl,
         contentHash,
         fingerprint,
