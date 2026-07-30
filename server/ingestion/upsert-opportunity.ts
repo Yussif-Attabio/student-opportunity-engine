@@ -11,6 +11,18 @@ import {
 
 type Database = ReturnType<typeof getDatabase>
 
+const AI_CLASSIFIABLE_TYPES = new Set([
+  'INTERNSHIP',
+  'NEW_GRAD_JOB',
+  'CO_OP',
+  'FELLOWSHIP',
+  'SCHOLARSHIP',
+  'RESEARCH',
+  'APPRENTICESHIP',
+  'CAMPUS_PROGRAM',
+  'ROTATIONAL_PROGRAM'
+])
+
 export interface OpportunityUpsertResult {
   id: string
   outcome: 'created' | 'updated' | 'unchanged'
@@ -30,6 +42,9 @@ export const upsertOpportunity = async (
     normalized.title,
     normalized.descriptionText
   )
+  const classificationRequired =
+    eligibility.positiveIndicators.length > 0 ||
+    AI_CLASSIFIABLE_TYPES.has(normalized.opportunityType)
 
   return database.transaction(async (transaction) => {
     await transaction.execute(
@@ -43,7 +58,8 @@ export const upsertOpportunity = async (
         externalId: opportunities.externalId,
         canonicalApplicationUrl: opportunities.canonicalApplicationUrl,
         fingerprint: opportunities.fingerprint,
-        contentHash: opportunities.contentHash
+        contentHash: opportunities.contentHash,
+        classificationStatus: opportunities.classificationStatus
       })
       .from(opportunities)
       .where(
@@ -78,7 +94,7 @@ export const upsertOpportunity = async (
           fingerprint,
           studentEligible: eligibility.studentEligible,
           studentEligibilityConfidence: eligibility.confidence,
-          classificationStatus: 'PENDING',
+          classificationStatus: classificationRequired ? 'PENDING' : 'SKIPPED',
           firstSeenAt: now,
           lastSeenAt: now,
           lastSyncedAt: now,
@@ -91,7 +107,7 @@ export const upsertOpportunity = async (
         id: created.id,
         outcome: 'created',
         duplicateDetected: false,
-        classificationRequired: true
+        classificationRequired
       }
     }
 
@@ -122,6 +138,20 @@ export const upsertOpportunity = async (
           lastSyncedAt: now,
           isActive: true,
           missedSuccessfulSyncs: 0,
+          studentEligible:
+            existing.classificationStatus === 'SUCCEEDED'
+              ? undefined
+              : eligibility.studentEligible,
+          studentEligibilityConfidence:
+            existing.classificationStatus === 'SUCCEEDED'
+              ? undefined
+              : eligibility.confidence,
+          classificationStatus:
+            existing.classificationStatus === 'SUCCEEDED'
+              ? undefined
+              : classificationRequired
+                ? existing.classificationStatus
+                : 'SKIPPED',
           rawSourceData: normalized.rawSourceData,
           updatedAt: now
         })
@@ -130,7 +160,8 @@ export const upsertOpportunity = async (
         id: existing.id,
         outcome: 'unchanged',
         duplicateDetected: false,
-        classificationRequired: false
+        classificationRequired:
+          classificationRequired && existing.classificationStatus === 'FAILED'
       }
     }
 
@@ -143,7 +174,7 @@ export const upsertOpportunity = async (
         fingerprint,
         studentEligible: eligibility.studentEligible,
         studentEligibilityConfidence: eligibility.confidence,
-        classificationStatus: 'PENDING',
+        classificationStatus: classificationRequired ? 'PENDING' : 'SKIPPED',
         classifierVersion: null,
         classifiedAt: null,
         lastSeenAt: now,
@@ -158,7 +189,7 @@ export const upsertOpportunity = async (
       id: existing.id,
       outcome: 'updated',
       duplicateDetected: false,
-      classificationRequired: true
+      classificationRequired
     }
   })
 }

@@ -17,6 +17,8 @@
     "scheduler:setup": "node --import tsx scripts/setup-qstash-schedule.ts",
     "sources:dispatch": "node --import tsx scripts/dispatch-due-sources.ts",
     "ingestion:status": "node --import tsx scripts/ingestion-status.ts",
+    "sources:sync-local": "node --import tsx scripts/sync-sources-local.ts",
+    "classifications:queue": "node --import tsx scripts/queue-student-classifications.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "eslint .",

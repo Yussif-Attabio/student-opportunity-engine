@@ -26,4 +26,13 @@ describe('deterministic eligibility', () => {
     )
     expect(result.studentEligible).toBe(false)
   })
+
+  it('does not match intern inside unrelated words', () => {
+    const result = evaluateDeterministicEligibility(
+      'Mobile Engineer',
+      'Internalize best practices while building production systems.'
+    )
+    expect(result.positiveIndicators).not.toContain('intern')
+    expect(result.studentEligible).toBeNull()
+  })
 })

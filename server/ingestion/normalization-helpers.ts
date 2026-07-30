@@ -7,12 +7,37 @@ import type {
 
 const identifierPattern = /^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/
 
+const decodeCodePoint = (value: string, radix: number) => {
+  const codePoint = Number.parseInt(value, radix)
+  return Number.isInteger(codePoint) &&
+    codePoint >= 0 &&
+    codePoint <= 0x10ffff &&
+    (codePoint < 0xd800 || codePoint > 0xdfff)
+    ? String.fromCodePoint(codePoint)
+    : '\uFFFD'
+}
+
+const decodeHtmlEntities = (value: string) =>
+  value
+    .replace(/&#x([0-9a-f]+);/gi, (_match, value: string) =>
+      decodeCodePoint(value, 16)
+    )
+    .replace(/&#([0-9]+);/g, (_match, value: string) =>
+      decodeCodePoint(value, 10)
+    )
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/&quot;/gi, '"')
+    .replace(/&apos;|&#39;/gi, "'")
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;/gi, '&')
+
 export const validateSourceIdentifier = (identifier: string) =>
   identifierPattern.test(identifier)
 
 export const sanitizeDescriptionHtml = (value: string | null | undefined) => {
   if (!value) return null
-  return sanitizeHtml(value, {
+  return sanitizeHtml(decodeHtmlEntities(value), {
     allowedTags: [
       'p',
       'br',

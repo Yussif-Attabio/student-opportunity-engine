@@ -92,7 +92,9 @@ export const useOpportunities = () => {
     setLoading(true)
     try {
       const persistedResponse = await fetch(
-        `/api/opportunities?limit=100${forceRefresh ? `&refresh=${Date.now()}` : ''}`
+        `/api/opportunities?limit=100&studentEligible=true${
+          forceRefresh ? `&refresh=${Date.now()}` : ''
+        }`
       )
       if (persistedResponse.ok) {
         const persisted =
