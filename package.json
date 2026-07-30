@@ -15,6 +15,8 @@
     "db:seed": "node --import tsx scripts/seed-sources.ts",
     "sources:test-public": "node --import tsx scripts/test-public-sources.ts",
     "scheduler:setup": "node --import tsx scripts/setup-qstash-schedule.ts",
+    "sources:dispatch": "node --import tsx scripts/dispatch-due-sources.ts",
+    "ingestion:status": "node --import tsx scripts/ingestion-status.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "eslint .",
@@ -31,7 +33,7 @@
     "postgres": "^3.4.9",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
-    "sanitize-html": "^2.17.6",
+    "sanitize-html": "2.17.5",
     "zod": "^4.4.3"
   },
   "devDependencies": {
