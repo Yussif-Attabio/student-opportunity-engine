@@ -37,6 +37,31 @@ interface PersistedOpportunityResponse {
   nextCursor: string | null
 }
 
+const DESCRIPTION_SUMMARY_MAX_LENGTH = 280
+
+const summarizeDescription = (value: string | null) => {
+  const normalized = value?.replace(/\s+/g, ' ').trim()
+  if (!normalized) return 'See the official posting for details.'
+  if (normalized.length <= DESCRIPTION_SUMMARY_MAX_LENGTH) return normalized
+
+  const excerpt = normalized.slice(0, DESCRIPTION_SUMMARY_MAX_LENGTH + 1)
+  const sentenceEnd = Math.max(
+    excerpt.lastIndexOf('. '),
+    excerpt.lastIndexOf('! '),
+    excerpt.lastIndexOf('? ')
+  )
+  if (sentenceEnd >= DESCRIPTION_SUMMARY_MAX_LENGTH / 2) {
+    return excerpt.slice(0, sentenceEnd + 1)
+  }
+
+  const wordEnd = excerpt.lastIndexOf(' ')
+  const end =
+    wordEnd >= DESCRIPTION_SUMMARY_MAX_LENGTH / 2
+      ? wordEnd
+      : DESCRIPTION_SUMMARY_MAX_LENGTH
+  return `${excerpt.slice(0, end).trimEnd()}…`
+}
+
 const toOpportunityType = (type: string): Opportunity['type'] => {
   if (type === 'INTERNSHIP' || type === 'CO_OP') return 'internship'
   if (type === 'FELLOWSHIP') return 'fellowship'
@@ -64,10 +89,9 @@ const mapPersistedOpportunity = (
   source: opportunity.organizationName,
   location: opportunity.locations.join(', ') || 'Location not listed',
   deadline: opportunity.applicationDeadline ?? '',
-  description:
-    opportunity.studentFacingSummary ??
-    opportunity.descriptionText ??
-    'See the official posting for details.',
+  description: summarizeDescription(
+    opportunity.studentFacingSummary ?? opportunity.descriptionText
+  ),
   requiredSkills: opportunity.requiredSkills,
   relatedMajors: opportunity.majors,
   tags: [

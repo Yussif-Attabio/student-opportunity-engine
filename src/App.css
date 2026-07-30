@@ -286,6 +286,13 @@
   margin: 0 0 16px 0;
 }
 
+.opportunity-card .opp-description {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
 .match-reasons {
   background: var(--accent-bg);
   border-left: 3px solid var(--accent);
