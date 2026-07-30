@@ -35,14 +35,7 @@ const opportunityTypeColors: Record<OpportunityType, string> = {
 
 function App() {
   const [activeTab, setActiveTab] = useState<TabType>('opportunities')
-  const {
-    opportunities,
-    providers: jobProviders,
-    warnings: jobWarnings,
-    loading: jobsLoading,
-    usingFallback: usingJobFallback,
-    refresh: refreshJobs
-  } = useOpportunities()
+  const { opportunities } = useOpportunities()
   const SAVED_KEY = 'soe-saved-opportunity-ids'
   const STATUS_KEY = 'soe-application-statuses'
   const APPLY_KEY = 'soe-apply-clicked-ids'
@@ -547,25 +540,6 @@ function App() {
           <div className="tab-content">
             <h2>Opportunities</h2>
             <p>Your personalized feed of campus and external opportunities</p>
-
-            <div className={`live-feed-status ${usingJobFallback ? 'fallback' : ''}`}>
-              <div>
-                <strong>
-                  {jobsLoading
-                    ? 'Loading live jobs...'
-                    : usingJobFallback
-                      ? 'Showing sample opportunities'
-                      : `${opportunities.length} live student opportunities`}
-                </strong>
-                {!jobsLoading && !usingJobFallback && (
-                  <span>From {jobProviders.join(', ')}</span>
-                )}
-                {jobWarnings.length > 0 && <span>{jobWarnings.join(' ')}</span>}
-              </div>
-              <button type="button" onClick={() => void refreshJobs()} disabled={jobsLoading}>
-                {jobsLoading ? 'Refreshing...' : 'Refresh jobs'}
-              </button>
-            </div>
 
             {/* Dashboard summary */}
             <div className="dashboard-summary">
