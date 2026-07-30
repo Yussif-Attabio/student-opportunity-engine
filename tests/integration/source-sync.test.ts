@@ -26,6 +26,7 @@ const normalized = (sourceId: string): NormalizedOpportunity => ({
   opportunityType: 'INTERNSHIP',
   employmentType: 'INTERN',
   departments: ['Engineering'],
+  teams: ['University Recruiting'],
   locations: ['Remote'],
   city: null,
   state: null,
@@ -52,6 +53,19 @@ const adapter = (fail = false): OpportunitySourceAdapter => ({
     return [{ externalId: 'job-1', data: { id: 'job-1' } }]
   },
   normalize: async (_raw, source) => normalized(source.id)
+})
+
+const partialAdapter = (): OpportunitySourceAdapter => ({
+  sourceType: 'GREENHOUSE',
+  validateSource: async () => ({ valid: true, errors: [] }),
+  fetchOpportunities: async () => [
+    { externalId: 'job-1', data: { id: 'job-1' } },
+    { externalId: 'malformed', data: { id: 'malformed' } }
+  ],
+  normalize: async (raw, source) => {
+    if (raw.externalId === 'malformed') throw new Error('Malformed posting')
+    return normalized(source.id)
+  }
 })
 
 suite('source synchronization integration', () => {
@@ -101,5 +115,28 @@ suite('source synchronization integration', () => {
       sourceId
     )
     expect(retried.status).toBe('SUCCEEDED')
+  })
+
+  it('keeps item failures partial without advancing source request failures', async () => {
+    await context.database
+      .update(opportunitySources)
+      .set({ consecutiveFailures: 2 })
+      .where(eq(opportunitySources.id, sourceId))
+
+    const result = await syncSource(
+      context.database,
+      new AdapterRegistry([partialAdapter()]),
+      sourceId
+    )
+    const [source] = await context.database
+      .select()
+      .from(opportunitySources)
+      .where(eq(opportunitySources.id, sourceId))
+
+    expect(result.status).toBe('PARTIAL')
+    expect(result.createdCount).toBe(1)
+    expect(result.failureCount).toBe(1)
+    expect(source?.status).toBe('DEGRADED')
+    expect(source?.consecutiveFailures).toBe(0)
   })
 })

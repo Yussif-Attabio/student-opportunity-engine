@@ -17,3 +17,8 @@ attempt. Failed attempts are intentionally retryable.
 
 **Database tests are skipped:** provide an isolated `DATABASE_TEST_URL`. Never use a
 production or shared development database.
+
+**Structured career page is rejected:** confirm the URL uses HTTPS, `sourceIdentifier`
+exactly matches the hostname, redirects are explicitly allowlisted, DNS resolves only
+to public addresses, robots.txt allows `JOB_SYNC_USER_AGENT`, the response is static
+HTML below `SOURCE_HTML_MAX_RESPONSE_BYTES`, and valid `JobPosting` JSON-LD exists.

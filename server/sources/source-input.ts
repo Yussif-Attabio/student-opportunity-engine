@@ -5,10 +5,25 @@ export const sourceTypeSchema = z.enum([
   'LEVER',
   'ASHBY',
   'ADZUNA',
+  'STRUCTURED_DATA',
+  'CUSTOM_SCRAPER',
   'CUSTOM_API',
   'RSS',
   'MANUAL'
 ])
+
+export const implementedSourceTypes = [
+  'GREENHOUSE',
+  'LEVER',
+  'ASHBY',
+  'ADZUNA',
+  'STRUCTURED_DATA'
+] as const
+
+export const isImplementedSourceType = (
+  value: string
+): value is (typeof implementedSourceTypes)[number] =>
+  (implementedSourceTypes as readonly string[]).includes(value)
 
 export const createSourceSchema = z.object({
   organizationName: z.string().trim().min(1).max(200),

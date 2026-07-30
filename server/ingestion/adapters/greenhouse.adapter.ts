@@ -86,6 +86,7 @@ export class GreenhouseAdapter implements OpportunitySourceAdapter {
       departments: (job.departments ?? [])
         .map((department) => department.name?.trim())
         .filter((name): name is string => Boolean(name)),
+      teams: [],
       locations: location ? [location] : [],
       city: null,
       state: null,

@@ -40,6 +40,7 @@ suite('opportunity upsert integration', () => {
     opportunityType: 'INTERNSHIP',
     employmentType: 'INTERN',
     departments: ['Engineering'],
+    teams: ['University Recruiting'],
     locations: ['Remote'],
     city: null,
     state: null,

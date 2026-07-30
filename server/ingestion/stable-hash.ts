@@ -19,7 +19,7 @@ export const createOpportunityFingerprint = (input: {
   organizationName: string
   title: string
   locations: string[]
-  opportunityType: string
+  employmentType: string
 }): string =>
   stableHash({
     organization: normalizeFingerprintPart(input.organizationName),
@@ -27,7 +27,7 @@ export const createOpportunityFingerprint = (input: {
     locations: [...new Set(input.locations.map(normalizeFingerprintPart))]
       .filter(Boolean)
       .sort(),
-    opportunityType: input.opportunityType
+    employmentType: input.employmentType
   })
 
 export const createOpportunityContentHash = (input: {
@@ -38,6 +38,7 @@ export const createOpportunityContentHash = (input: {
   opportunityType: string
   employmentType: string
   departments: string[]
+  teams: string[]
   locations: string[]
   city: string | null
   state: string | null
@@ -59,6 +60,7 @@ export const createOpportunityContentHash = (input: {
     opportunityType: input.opportunityType,
     employmentType: input.employmentType,
     departments: input.departments.map((value) => normalizeText(value)).filter(Boolean).sort(),
+    teams: input.teams.map((value) => normalizeText(value)).filter(Boolean).sort(),
     locations: input.locations.map((value) => normalizeText(value)).filter(Boolean).sort(),
     city: normalizeText(input.city),
     state: normalizeText(input.state),

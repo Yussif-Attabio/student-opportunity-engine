@@ -127,7 +127,10 @@ export class LeverAdapter implements OpportunitySourceAdapter {
       descriptionHtml,
       opportunityType: inferOpportunityType(job.text, job.categories?.commitment),
       employmentType: normalizeEmploymentType(job.categories?.commitment),
-      departments: [job.categories?.department, job.categories?.team].filter(
+      departments: [job.categories?.department].filter(
+        (value): value is string => Boolean(value)
+      ),
+      teams: [job.categories?.team].filter(
         (value): value is string => Boolean(value)
       ),
       locations,

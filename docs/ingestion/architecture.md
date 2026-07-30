@@ -12,8 +12,14 @@ one source or classify one opportunity. QStash supplies durable delivery, expone
 retries, failure callbacks, and flow-control concurrency.
 
 Provider adapters are isolated behind `OpportunitySourceAdapter`. The shared sync core
-does not contain Greenhouse, Lever, Ashby, or Adzuna response logic. Built-in adapters construct
-requests only for fixed HTTPS allowlisted provider hosts.
+does not contain Greenhouse, Lever, Ashby, Adzuna, or JSON-LD response logic. Built-in
+API adapters construct requests only for fixed HTTPS allowlisted provider hosts.
+
+`STRUCTURED_DATA` sources point to one explicitly registered HTTPS career page. The
+safe page client verifies the exact hostname, rejects private and reserved DNS results,
+checks robots.txt, follows only bounded redirects to explicitly approved hosts, sends
+an identifying User-Agent, and limits response time and size. It parses static HTML
+only and never executes page scripts.
 
 The existing `/api/jobs` request-time feed remains a temporary compatibility path.
 New integrations should use the persisted `/api/opportunities` API.

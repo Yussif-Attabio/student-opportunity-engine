@@ -46,6 +46,7 @@ export const opportunities = pgTable(
     employmentType: employmentTypeEnum('employment_type').notNull().default('UNKNOWN'),
     experienceLevel: experienceLevelEnum('experience_level').notNull().default('UNKNOWN'),
     departments: text('departments').array().notNull().default(sql`ARRAY[]::text[]`),
+    teams: text('teams').array().notNull().default(sql`ARRAY[]::text[]`),
     locations: text('locations').array().notNull().default(sql`ARRAY[]::text[]`),
     city: text('city'),
     state: text('state'),

@@ -5,6 +5,8 @@ export const sourceTypeEnum = pgEnum('source_type', [
   'LEVER',
   'ASHBY',
   'ADZUNA',
+  'STRUCTURED_DATA',
+  'CUSTOM_SCRAPER',
   'CUSTOM_API',
   'RSS',
   'MANUAL'

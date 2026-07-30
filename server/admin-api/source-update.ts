@@ -3,7 +3,10 @@ import { getDatabase } from '../db/client.js'
 import { requireAdmin } from '../auth/require-admin.js'
 import { parseJsonBody } from '../http/json-body.js'
 import { getUuidRouteParameter } from '../http/route-params.js'
-import { updateSourceSchema } from '../sources/source-input.js'
+import {
+  isImplementedSourceType,
+  updateSourceSchema
+} from '../sources/source-input.js'
 import { SourceRepository } from '../sources/source-repository.js'
 
 export default async function handler(request: VercelRequest, response: VercelResponse) {
@@ -20,6 +23,12 @@ export default async function handler(request: VercelRequest, response: VercelRe
   const parsed = updateSourceSchema.safeParse(parseJsonBody(request))
   if (!parsed.success) {
     return response.status(400).json({ error: 'Invalid source update', issues: parsed.error.issues })
+  }
+  if (
+    parsed.data.sourceType &&
+    !isImplementedSourceType(parsed.data.sourceType)
+  ) {
+    return response.status(400).json({ error: 'This source type is not yet supported' })
   }
   const source = await new SourceRepository(database).update(
     getUuidRouteParameter(request, 'id'),

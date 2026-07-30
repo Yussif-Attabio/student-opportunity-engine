@@ -55,6 +55,7 @@ export interface NormalizedOpportunity {
   opportunityType: NormalizedOpportunityType
   employmentType: NormalizedEmploymentType
   departments: string[]
+  teams: string[]
   locations: string[]
   city: string | null
   state: string | null

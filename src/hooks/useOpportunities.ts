@@ -18,6 +18,7 @@ interface PersistedOpportunity {
   studentFacingSummary: string | null
   opportunityType: string
   departments: string[]
+  teams: string[]
   locations: string[]
   remoteStatus: string
   applicationUrl: string
@@ -100,6 +101,7 @@ const mapPersistedOpportunity = (
   relatedMajors: opportunity.majors,
   tags: [
     ...opportunity.departments,
+    ...opportunity.teams,
     opportunity.remoteStatus !== 'UNKNOWN'
       ? opportunity.remoteStatus.toLowerCase()
       : ''

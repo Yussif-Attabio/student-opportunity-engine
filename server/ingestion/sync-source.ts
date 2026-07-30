@@ -190,8 +190,7 @@ export const syncSource = async (
       .set({
         status: status === 'SUCCEEDED' ? 'HEALTHY' : 'DEGRADED',
         lastSuccessfulSyncAt: status === 'SUCCEEDED' ? completedAt : source.lastSuccessfulSyncAt,
-        consecutiveFailures:
-          status === 'SUCCEEDED' ? 0 : sql`${opportunitySources.consecutiveFailures} + 1`,
+        consecutiveFailures: 0,
         nextSyncAt: nextSyncAt(source.syncFrequencyMinutes, completedAt),
         updatedAt: completedAt
       })

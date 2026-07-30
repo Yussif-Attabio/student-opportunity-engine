@@ -56,6 +56,7 @@ export const publicOpportunitySelection = {
   employmentType: opportunities.employmentType,
   experienceLevel: opportunities.experienceLevel,
   departments: opportunities.departments,
+  teams: opportunities.teams,
   locations: opportunities.locations,
   city: opportunities.city,
   state: opportunities.state,

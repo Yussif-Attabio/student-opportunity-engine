@@ -6,6 +6,10 @@
 4. Start the app with `npm run dev`.
 5. Run `npm run typecheck:backend` and `npm test`.
 
+Structured-data tests use saved HTML fixtures and mocked DNS/HTTP responses. Normal
+automated tests must not depend on live career pages. `npm run sources:test-public`
+remains an optional explicit network smoke test.
+
 The React client tries persisted `/api/opportunities` first and temporarily falls back to
 the legacy live `/api/jobs` feed while the database is unconfigured.
 

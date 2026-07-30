@@ -27,13 +27,13 @@ describe('opportunity identity', () => {
       organizationName: 'Example & Company',
       title: 'Software Engineer - Intern',
       locations: ['New York, NY', 'Remote'],
-      opportunityType: 'INTERNSHIP'
+      employmentType: 'INTERN'
     })
     const second = createOpportunityFingerprint({
       organizationName: ' example and company ',
       title: 'SOFTWARE ENGINEER INTERN',
       locations: ['Remote', 'New York NY'],
-      opportunityType: 'INTERNSHIP'
+      employmentType: 'INTERN'
     })
     expect(first).toBe(second)
   })
@@ -47,6 +47,7 @@ describe('opportunity identity', () => {
       opportunityType: 'INTERNSHIP',
       employmentType: 'INTERN',
       departments: ['Engineering'],
+      teams: ['University Recruiting'],
       locations: ['Remote'],
       city: null,
       state: null,

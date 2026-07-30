@@ -5,6 +5,7 @@ import { createAdapterRegistry } from '../ingestion/create-adapter-registry.js'
 import type { OpportunitySource } from '../ingestion/contracts.js'
 import { parseJsonBody } from '../http/json-body.js'
 import { createSourceSchema } from '../sources/source-input.js'
+import { isImplementedSourceType } from '../sources/source-input.js'
 import { SourceRepository } from '../sources/source-repository.js'
 
 export default async function handler(request: VercelRequest, response: VercelResponse) {
@@ -24,7 +25,7 @@ export default async function handler(request: VercelRequest, response: VercelRe
     if (!parsed.success) {
       return response.status(400).json({ error: 'Invalid source', issues: parsed.error.issues })
     }
-    if (!['GREENHOUSE', 'LEVER', 'ASHBY'].includes(parsed.data.sourceType)) {
+    if (!isImplementedSourceType(parsed.data.sourceType)) {
       return response.status(400).json({ error: 'This source type is not yet supported' })
     }
     const candidate: OpportunitySource = {

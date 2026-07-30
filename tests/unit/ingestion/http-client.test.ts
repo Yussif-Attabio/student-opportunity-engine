@@ -4,6 +4,7 @@ import { AllowlistedJsonHttpClient } from '../../../server/ingestion/http-client
 
 afterEach(() => {
   vi.unstubAllGlobals()
+  delete process.env.JOB_SYNC_USER_AGENT
 })
 
 describe('AllowlistedJsonHttpClient', () => {
@@ -70,6 +71,24 @@ describe('AllowlistedJsonHttpClient', () => {
       retryable: true,
       statusCode: 429,
       retryAfterSeconds: 10
+    })
+  })
+
+  it('identifies provider requests with the configured User-Agent', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response('{}', {
+        status: 200,
+        headers: { 'content-type': 'application/json' }
+      })
+    )
+    vi.stubGlobal('fetch', fetchMock)
+    process.env.JOB_SYNC_USER_AGENT = 'StudentOpportunityEngineBot/1.0'
+    const client = new AllowlistedJsonHttpClient()
+
+    await client.getJson(new URL('https://api.ashbyhq.com/posting-api/job-board/test'))
+
+    expect(fetchMock.mock.calls[0]?.[1]?.headers).toMatchObject({
+      'User-Agent': 'StudentOpportunityEngineBot/1.0'
     })
   })
 })

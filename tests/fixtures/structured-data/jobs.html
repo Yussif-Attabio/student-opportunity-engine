@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <script type="application/ld+json">
+      {"@context":"https://schema.org","@type":"Organization","name":"Example Labs"}
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebPage",
+            "name": "Careers"
+          },
+          {
+            "@type": ["Thing", "JobPosting"],
+            "identifier": {
+              "@type": "PropertyValue",
+              "name": "Example Labs",
+              "value": "structured-123"
+            },
+            "title": "Software Engineering Intern",
+            "description": "<p>Build student tools.</p><img src=x onerror=alert('x')>",
+            "datePosted": "2026-07-01T12:00:00Z",
+            "validThrough": "2026-09-01T23:59:59Z",
+            "employmentType": ["FULL_TIME", "INTERN"],
+            "hiringOrganization": {
+              "@type": "Organization",
+              "name": "Example Labs",
+              "logo": "https://careers.example.com/logo.png"
+            },
+            "jobLocation": {
+              "@type": "Place",
+              "address": {
+                "@type": "PostalAddress",
+                "addressLocality": "Seattle",
+                "addressRegion": "WA",
+                "addressCountry": {
+                  "@type": "Country",
+                  "name": "US"
+                }
+              }
+            },
+            "applicantLocationRequirements": {
+              "@type": "Country",
+              "name": "United States"
+            },
+            "jobLocationType": "TELECOMMUTE",
+            "baseSalary": {
+              "@type": "MonetaryAmount",
+              "currency": "USD",
+              "value": {
+                "@type": "QuantitativeValue",
+                "minValue": 25,
+                "maxValue": 35,
+                "unitText": "HOUR"
+              }
+            },
+            "url": "/jobs/software-engineering-intern"
+          }
+        ]
+      }
+    </script>
+    <script type="application/ld+json">{"broken":</script>
+  </head>
+  <body>Example careers</body>
+</html>

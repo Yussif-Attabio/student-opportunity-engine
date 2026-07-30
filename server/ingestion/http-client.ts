@@ -1,4 +1,5 @@
 import { SourceFetchError } from './errors.js'
+import { getJobSyncUserAgent } from './user-agent.js'
 
 export interface JsonHttpClient {
   getJson<T>(url: URL): Promise<T>
@@ -74,7 +75,10 @@ export class AllowlistedJsonHttpClient implements JsonHttpClient {
       response = await fetch(url, {
         method: 'GET',
         redirect: 'error',
-        headers: { Accept: 'application/json' },
+        headers: {
+          Accept: 'application/json',
+          'User-Agent': getJobSyncUserAgent()
+        },
         signal: AbortSignal.timeout(this.timeoutMs)
       })
     } catch (error) {

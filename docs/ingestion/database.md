@@ -14,6 +14,10 @@ classifications, failures, and admin profiles. Important constraints include uni
 `(source_id, external_id)`, unique canonical application URL, and one `RUNNING` sync per
 source.
 
+Migration `0003_light_redwing.sql` adds the non-destructive `STRUCTURED_DATA` and
+`CUSTOM_SCRAPER` source types and a `teams` array on opportunities. Existing source
+types and opportunity records remain valid.
+
 Never point automated tests at a shared database. Set `DATABASE_TEST_URL` to an isolated
 disposable PostgreSQL database; integration tests are skipped when it is absent.
 

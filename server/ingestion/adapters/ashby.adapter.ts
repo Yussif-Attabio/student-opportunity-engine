@@ -162,7 +162,10 @@ export class AshbyAdapter implements OpportunitySourceAdapter {
       descriptionHtml,
       opportunityType: inferOpportunityType(job.title, job.employmentType),
       employmentType: normalizeEmploymentType(job.employmentType),
-      departments: [job.department, job.team].filter(
+      departments: [job.department].filter(
+        (value): value is string => Boolean(value)
+      ),
+      teams: [job.team].filter(
         (value): value is string => Boolean(value)
       ),
       locations,

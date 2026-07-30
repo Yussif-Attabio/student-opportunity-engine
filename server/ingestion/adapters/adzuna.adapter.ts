@@ -140,6 +140,7 @@ export class AdzunaAdapter implements OpportunitySourceAdapter {
       opportunityType: inferOpportunityType(job.title, employmentLabel),
       employmentType: normalizeEmploymentType(employmentLabel),
       departments: job.category?.label ? [job.category.label] : [],
+      teams: [],
       locations: location ? [location] : [],
       city: null,
       state: null,
