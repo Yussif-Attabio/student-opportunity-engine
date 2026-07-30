@@ -42,5 +42,5 @@ Locations: ${opportunity.locations.join(', ') || 'Unknown'}
 Provider remote status: ${opportunity.remoteStatus}
 Provider opportunity type: ${opportunity.opportunityType}
 Description:
-${(opportunity.descriptionText ?? '').slice(0, 50_000)}
+${(opportunity.descriptionText ?? '').slice(0, 12_000)}
 `.trim()

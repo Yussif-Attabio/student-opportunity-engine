@@ -15,7 +15,7 @@ import type { OpportunityFilters } from './filters.js'
 
 type Database = ReturnType<typeof getDatabase>
 
-const sortTimestamp = sql<Date>`coalesce(${opportunities.datePosted}, ${opportunities.firstSeenAt})`
+const sortTimestamp = sql<Date | string>`coalesce(${opportunities.datePosted}, ${opportunities.firstSeenAt})`
 
 const decodeCursor = (cursor: string | undefined) => {
   if (!cursor) return null
@@ -28,13 +28,19 @@ const decodeCursor = (cursor: string | undefined) => {
   }
   const timestamp = new Date(parsed.timestamp)
   if (Number.isNaN(timestamp.getTime())) throw new Error('Invalid opportunity cursor')
-  return { timestamp, id: parsed.id }
+  return { timestamp: timestamp.toISOString(), id: parsed.id }
 }
 
-const encodeCursor = (timestamp: Date, id: string) =>
-  Buffer.from(JSON.stringify({ timestamp: timestamp.toISOString(), id })).toString(
-    'base64url'
-  )
+const encodeCursor = (timestampValue: Date | string, id: string) => {
+  const timestamp =
+    timestampValue instanceof Date ? timestampValue : new Date(timestampValue)
+  if (Number.isNaN(timestamp.getTime())) {
+    throw new Error('Opportunity sort timestamp is invalid')
+  }
+  return Buffer.from(
+    JSON.stringify({ timestamp: timestamp.toISOString(), id })
+  ).toString('base64url')
+}
 
 export const publicOpportunitySelection = {
   id: opportunities.id,

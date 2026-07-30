@@ -53,7 +53,9 @@ export class IngestionQueueClient implements ClassificationDispatcher {
       failureCallback: `${this.appUrl}/api/internal/jobs/failure-callback`,
       flowControl: {
         key: 'opportunity-classification',
-        parallelism: positiveInteger(process.env.CLASSIFICATION_CONCURRENCY, 2)
+        parallelism: positiveInteger(process.env.CLASSIFICATION_CONCURRENCY, 1),
+        rate: positiveInteger(process.env.CLASSIFICATION_RATE_PER_MINUTE, 2),
+        period: 60
       }
     })
   }
