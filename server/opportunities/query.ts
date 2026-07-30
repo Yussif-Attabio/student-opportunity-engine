@@ -4,6 +4,7 @@ import {
   eq,
   gte,
   ilike,
+  inArray,
   lt,
   or,
   sql,
@@ -127,7 +128,26 @@ export const queryOpportunities = async (
     conditions.push(gte(opportunities.datePosted, filters.datePostedAfter))
   }
   if (filters.studentEligible) {
-    conditions.push(eq(opportunities.studentEligible, filters.studentEligible === 'true'))
+    const eligible = filters.studentEligible === 'true'
+    conditions.push(eq(opportunities.studentEligible, eligible))
+    if (eligible) {
+      conditions.push(
+        or(
+          eq(opportunities.classificationStatus, 'SUCCEEDED'),
+          inArray(opportunities.opportunityType, [
+            'INTERNSHIP',
+            'NEW_GRAD_JOB',
+            'CO_OP',
+            'FELLOWSHIP',
+            'SCHOLARSHIP',
+            'RESEARCH',
+            'APPRENTICESHIP',
+            'CAMPUS_PROGRAM',
+            'ROTATIONAL_PROGRAM'
+          ])
+        )!
+      )
+    }
   }
   if (filters.sponsorshipStatus) {
     conditions.push(eq(opportunities.sponsorshipStatus, filters.sponsorshipStatus))
