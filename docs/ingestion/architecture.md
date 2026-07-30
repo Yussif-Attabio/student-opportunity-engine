@@ -12,7 +12,7 @@ one source or classify one opportunity. QStash supplies durable delivery, expone
 retries, failure callbacks, and flow-control concurrency.
 
 Provider adapters are isolated behind `OpportunitySourceAdapter`. The shared sync core
-does not contain Greenhouse, Lever, or Ashby response logic. Built-in adapters construct
+does not contain Greenhouse, Lever, Ashby, or Adzuna response logic. Built-in adapters construct
 requests only for fixed HTTPS allowlisted provider hosts.
 
 The existing `/api/jobs` request-time feed remains a temporary compatibility path.

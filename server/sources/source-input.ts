@@ -4,6 +4,7 @@ export const sourceTypeSchema = z.enum([
   'GREENHOUSE',
   'LEVER',
   'ASHBY',
+  'ADZUNA',
   'CUSTOM_API',
   'RSS',
   'MANUAL'

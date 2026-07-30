@@ -40,6 +40,10 @@ export interface Opportunity {
   tags: string[]
   applicationStep: string
   applicationUrl?: string
+  attribution?: {
+    label: string
+    url: string
+  }
   postedDate: string
   compensation?: string
   duration?: string

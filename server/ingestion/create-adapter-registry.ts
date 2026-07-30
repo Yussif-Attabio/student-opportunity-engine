@@ -1,4 +1,5 @@
 import { AshbyAdapter } from './adapters/ashby.adapter.js'
+import { AdzunaAdapter } from './adapters/adzuna.adapter.js'
 import { GreenhouseAdapter } from './adapters/greenhouse.adapter.js'
 import { LeverAdapter } from './adapters/lever.adapter.js'
 import { AdapterRegistry } from './adapter-registry.js'
@@ -9,6 +10,7 @@ export const createAdapterRegistry = (): AdapterRegistry => {
   return new AdapterRegistry([
     new GreenhouseAdapter(client),
     new LeverAdapter(client),
-    new AshbyAdapter(client)
+    new AshbyAdapter(client),
+    new AdzunaAdapter(client)
   ])
 }

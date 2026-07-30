@@ -221,6 +221,16 @@ function App() {
           <div>
             <h3 className="opp-title">{opp.title}</h3>
             <p className="opp-source">{opp.source}</p>
+            {opp.attribution && (
+              <a
+                className="opp-attribution"
+                href={opp.attribution.url}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {opp.attribution.label}
+              </a>
+            )}
           </div>
           <div className="card-header-right">
             <span
@@ -1055,6 +1065,18 @@ function App() {
 
             <div className="modal-body">
               <p className="opp-source">{selectedOpportunity.source} · {selectedOpportunity.location}</p>
+              {selectedOpportunity.attribution && (
+                <p>
+                  <a
+                    className="opp-attribution"
+                    href={selectedOpportunity.attribution.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {selectedOpportunity.attribution.label}
+                  </a>
+                </p>
+              )}
               <p>
                 <strong>Deadline:</strong>{' '}
                 {selectedOpportunity.deadline

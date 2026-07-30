@@ -1,0 +1,1 @@
+ALTER TYPE "public"."source_type" ADD VALUE 'ADZUNA' BEFORE 'CUSTOM_API';

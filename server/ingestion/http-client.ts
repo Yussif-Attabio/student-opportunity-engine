@@ -8,7 +8,8 @@ const allowedProviderHosts = new Set([
   'boards-api.greenhouse.io',
   'api.lever.co',
   'api.eu.lever.co',
-  'api.ashbyhq.com'
+  'api.ashbyhq.com',
+  'api.adzuna.com'
 ])
 
 const parsePositiveInteger = (value: string | undefined, fallback: number) => {

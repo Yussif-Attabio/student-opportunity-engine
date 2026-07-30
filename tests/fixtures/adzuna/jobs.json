@@ -1,0 +1,26 @@
+{
+  "count": 1,
+  "results": [
+    {
+      "id": "adzuna-123",
+      "title": "Software Engineering Intern",
+      "description": "Build software with our engineering team.",
+      "redirect_url": "https://www.adzuna.com/details/adzuna-123",
+      "created": "2026-07-29T12:00:00Z",
+      "salary_min": 50000,
+      "salary_max": 60000,
+      "contract_time": "full_time",
+      "contract_type": "internship",
+      "company": {
+        "display_name": "Example Technology"
+      },
+      "category": {
+        "label": "IT Jobs"
+      },
+      "location": {
+        "display_name": "Seattle, Washington",
+        "area": ["US", "Washington", "Seattle"]
+      }
+    }
+  ]
+}

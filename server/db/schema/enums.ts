@@ -4,6 +4,7 @@ export const sourceTypeEnum = pgEnum('source_type', [
   'GREENHOUSE',
   'LEVER',
   'ASHBY',
+  'ADZUNA',
   'CUSTOM_API',
   'RSS',
   'MANUAL'

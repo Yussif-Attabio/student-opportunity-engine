@@ -12,6 +12,7 @@ interface JobsFeedResponse {
 interface PersistedOpportunity {
   id: string
   organizationName: string
+  sourceType: string
   title: string
   descriptionText: string | null
   studentFacingSummary: string | null
@@ -77,6 +78,10 @@ const mapPersistedOpportunity = (
   ].filter(Boolean),
   applicationStep: 'Apply on the employer’s official application page.',
   applicationUrl: opportunity.applicationUrl,
+  attribution:
+    opportunity.sourceType === 'ADZUNA'
+      ? { label: 'Jobs by Adzuna', url: 'https://www.adzuna.com/' }
+      : undefined,
   postedDate: opportunity.datePosted ?? opportunity.firstSeenAt,
   compensation: formatCompensation(opportunity)
 })

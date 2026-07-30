@@ -245,6 +245,13 @@
   margin: 0;
 }
 
+.opp-attribution {
+  display: inline-block;
+  margin-top: 4px;
+  color: var(--accent);
+  font-size: 12px;
+}
+
 .opp-type-badge {
   display: inline-block;
   padding: 6px 12px;

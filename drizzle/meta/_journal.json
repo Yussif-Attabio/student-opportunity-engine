@@ -15,6 +15,13 @@
       "when": 1785396820212,
       "tag": "0001_needy_corsair",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1785435661298,
+      "tag": "0002_dark_punisher",
+      "breakpoints": true
     }
   ]
 }
