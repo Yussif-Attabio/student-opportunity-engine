@@ -5,10 +5,11 @@ replacing it. Supabase PostgreSQL stores sources, normalized opportunities, sync
 classification attempts, admin roles, and durable failures. Drizzle owns schema and
 migrations.
 
-Vercel Cron calls `/api/internal/cron/dispatch-sources` every 15 minutes. The dispatcher
-selects due enabled sources and publishes identifier-only messages to QStash. Signed
-workers synchronize one source or classify one opportunity. QStash supplies durable
-delivery, exponential retries, failure callbacks, and flow-control concurrency.
+QStash calls `/api/internal/cron/dispatch-sources` every 15 minutes. A once-daily Vercel
+Cron is retained as a free-plan safety trigger. The dispatcher selects due enabled
+sources and publishes identifier-only messages to QStash. Signed workers synchronize
+one source or classify one opportunity. QStash supplies durable delivery, exponential
+retries, failure callbacks, and flow-control concurrency.
 
 Provider adapters are isolated behind `OpportunitySourceAdapter`. The shared sync core
 does not contain Greenhouse, Lever, or Ashby response logic. Built-in adapters construct
