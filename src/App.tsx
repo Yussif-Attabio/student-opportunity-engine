@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import './App.css'
 import { emptyStudentProfile } from './data/opportunities'
+import { countries } from './data/countries'
 import type { CareerField, OpportunityType, StudentProfile, Opportunity } from './types'
 import { calculateMatch, getMatchColor } from './utils/matching'
 import { useAIGuidance } from './hooks/useAIGuidance'
@@ -38,7 +39,7 @@ function App() {
   const [activeTab, setActiveTab] = useState<TabType>('opportunities')
   const [countryFilter, setCountryFilter] = useState<string>('all')
   const [careerFieldFilter, setCareerFieldFilter] = useState<'all' | CareerField>('all')
-  const { opportunities, availableCountries } = useOpportunities({
+  const { opportunities } = useOpportunities({
     country: countryFilter === 'all' ? undefined : countryFilter,
     careerField: careerFieldFilter === 'all' ? undefined : careerFieldFilter
   })
@@ -608,7 +609,7 @@ function App() {
                 onChange={(e) => setCountryFilter(e.target.value)}
               >
                 <option value="all">All countries</option>
-                {availableCountries.map((country) => (
+                {countries.map((country) => (
                   <option key={country} value={country}>{country}</option>
                 ))}
               </select>

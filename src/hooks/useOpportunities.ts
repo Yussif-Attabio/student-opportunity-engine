@@ -127,7 +127,6 @@ const mapPersistedOpportunity = (
 
 export const useOpportunities = (filters: OpportunityFeedFilters = {}) => {
   const [opportunities, setOpportunities] = useState<Opportunity[]>(sampleOpportunities)
-  const [availableCountries, setAvailableCountries] = useState<string[]>([])
   const [providers, setProviders] = useState<string[]>([])
   const [warnings, setWarnings] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
@@ -171,15 +170,6 @@ export const useOpportunities = (filters: OpportunityFeedFilters = {}) => {
 
       if (persistedItems.length > 0) {
         if (activeRequest.current !== controller) return
-        if (!filters.country && !filters.careerField) {
-          setAvailableCountries([
-            ...new Set(
-              persistedItems
-                .map(({ country }) => country)
-                .filter((country): country is string => Boolean(country))
-            )
-          ].sort())
-        }
         setOpportunities(persistedItems.map(mapPersistedOpportunity))
         setProviders([
           ...new Set(persistedItems.map(({ organizationName }) => organizationName))
@@ -242,7 +232,6 @@ export const useOpportunities = (filters: OpportunityFeedFilters = {}) => {
 
   return {
     opportunities,
-    availableCountries,
     providers,
     warnings,
     loading,
