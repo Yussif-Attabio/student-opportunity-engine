@@ -16,7 +16,7 @@ describe('AdzunaAdapter', () => {
     const adapter = new AdzunaAdapter(client)
     const source = {
       ...createSource('ADZUNA', 'us'),
-      metadata: { currency: 'USD', maxPages: 1 }
+      metadata: { currency: 'USD', maxPages: 1, query: 'internship' }
     }
 
     const raw = await adapter.fetchOpportunities(source)
@@ -24,6 +24,7 @@ describe('AdzunaAdapter', () => {
 
     expect(raw).toHaveLength(1)
     expect(client.urls[0]?.searchParams.get('app_id')).toBe('test-id')
+    expect(client.urls[0]?.searchParams.get('what')).toBe('internship')
     expect(normalized.organizationName).toBe('Example Technology')
     expect(normalized.opportunityType).toBe('INTERNSHIP')
     expect(normalized.employmentType).toBe('INTERN')

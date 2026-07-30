@@ -9,8 +9,8 @@
 
 Adzuna provides optional broad, multi-company discovery. Configure
 `ADZUNA_APP_ID` and `ADZUNA_APP_KEY`, then rerun `npm run db:seed` to enable its
-United States source. Adzuna listings must retain their redirect URL and display
-the required “Jobs by Adzuna” attribution.
+United States internship source. Adzuna listings must retain their redirect URL
+and display the required “Jobs by Adzuna” attribution.
 
 Add organizations through `POST /api/admin/sources` or the seed process. A source holds
 its organization, provider type, public identifier, careers URL, enabled state,

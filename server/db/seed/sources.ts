@@ -61,7 +61,7 @@ export const verifiedSeedSources: CreateSourceInput[] = [
     }
   })),
   {
-    organizationName: 'Adzuna United States',
+    organizationName: 'Adzuna United States Internships',
     sourceType: 'ADZUNA',
     sourceIdentifier: 'us',
     careersUrl: 'https://www.adzuna.com/',
@@ -71,6 +71,7 @@ export const verifiedSeedSources: CreateSourceInput[] = [
       currency: 'USD',
       maxDaysOld: 30,
       maxPages: 5,
+      query: 'internship',
       attributionRequired: true,
       publicApiDocumentation: 'https://developer.adzuna.com/docs/search'
     }
