@@ -81,7 +81,8 @@ const ashbyResponseSchema = z.object({
 
 const externalIdFromJobUrl = (jobUrl: string) => {
   const url = new URL(jobUrl)
-  const pathSegment = url.pathname.split('/').filter(Boolean).at(-1)
+  const pathSegments = url.pathname.split('/').filter(Boolean)
+  const pathSegment = pathSegments[pathSegments.length - 1]
   return pathSegment || createHash('sha256').update(url.toString()).digest('hex')
 }
 

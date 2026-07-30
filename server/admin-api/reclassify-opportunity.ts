@@ -1,10 +1,10 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { eq } from 'drizzle-orm'
-import { getDatabase } from '../../../../server/db/client.js'
-import { opportunities } from '../../../../server/db/schema/opportunities.js'
-import { requireAdmin } from '../../../../server/auth/require-admin.js'
-import { getUuidRouteParameter } from '../../../../server/http/route-params.js'
-import { IngestionQueueClient } from '../../../../server/queue/client.js'
+import { getDatabase } from '../db/client.js'
+import { opportunities } from '../db/schema/opportunities.js'
+import { requireAdmin } from '../auth/require-admin.js'
+import { getUuidRouteParameter } from '../http/route-params.js'
+import { IngestionQueueClient } from '../queue/client.js'
 
 export default async function handler(request: VercelRequest, response: VercelResponse) {
   if (request.method !== 'POST') {

@@ -1,10 +1,10 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { sql } from 'drizzle-orm'
-import { getDatabase } from '../../../server/db/client.js'
-import { opportunitySources } from '../../../server/db/schema/opportunity-sources.js'
-import { opportunities } from '../../../server/db/schema/opportunities.js'
-import { opportunitySyncRuns } from '../../../server/db/schema/sync-runs.js'
-import { requireAdmin } from '../../../server/auth/require-admin.js'
+import { getDatabase } from '../db/client.js'
+import { opportunitySources } from '../db/schema/opportunity-sources.js'
+import { opportunities } from '../db/schema/opportunities.js'
+import { opportunitySyncRuns } from '../db/schema/sync-runs.js'
+import { requireAdmin } from '../auth/require-admin.js'
 
 export default async function handler(request: VercelRequest, response: VercelResponse) {
   if (request.method !== 'GET') {

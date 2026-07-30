@@ -1,10 +1,10 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { getDatabase } from '../../../server/db/client.js'
-import { requireAdmin } from '../../../server/auth/require-admin.js'
-import { parseJsonBody } from '../../../server/http/json-body.js'
-import { getUuidRouteParameter } from '../../../server/http/route-params.js'
-import { updateSourceSchema } from '../../../server/sources/source-input.js'
-import { SourceRepository } from '../../../server/sources/source-repository.js'
+import { getDatabase } from '../db/client.js'
+import { requireAdmin } from '../auth/require-admin.js'
+import { parseJsonBody } from '../http/json-body.js'
+import { getUuidRouteParameter } from '../http/route-params.js'
+import { updateSourceSchema } from '../sources/source-input.js'
+import { SourceRepository } from '../sources/source-repository.js'
 
 export default async function handler(request: VercelRequest, response: VercelResponse) {
   if (request.method !== 'PATCH') {

@@ -1,9 +1,9 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { desc, eq } from 'drizzle-orm'
-import { getDatabase } from '../../../../server/db/client.js'
-import { opportunitySyncRuns } from '../../../../server/db/schema/sync-runs.js'
-import { requireAdmin } from '../../../../server/auth/require-admin.js'
-import { getUuidRouteParameter } from '../../../../server/http/route-params.js'
+import { getDatabase } from '../db/client.js'
+import { opportunitySyncRuns } from '../db/schema/sync-runs.js'
+import { requireAdmin } from '../auth/require-admin.js'
+import { getUuidRouteParameter } from '../http/route-params.js'
 
 export default async function handler(request: VercelRequest, response: VercelResponse) {
   if (request.method !== 'GET') {

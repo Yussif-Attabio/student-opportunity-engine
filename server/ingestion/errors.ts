@@ -2,6 +2,7 @@ export class SourceFetchError extends Error {
   readonly retryable: boolean
   readonly statusCode: number | null
   readonly retryAfterSeconds: number | null
+  readonly originalCause: unknown
 
   constructor(
     message: string,
@@ -12,11 +13,12 @@ export class SourceFetchError extends Error {
       cause?: unknown
     }
   ) {
-    super(message, { cause: options.cause })
+    super(message)
     this.name = 'SourceFetchError'
     this.retryable = options.retryable
     this.statusCode = options.statusCode ?? null
     this.retryAfterSeconds = options.retryAfterSeconds ?? null
+    this.originalCause = options.cause
   }
 }
 

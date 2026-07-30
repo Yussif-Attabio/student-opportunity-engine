@@ -145,7 +145,7 @@ export const queryOpportunities = async (
     .limit(filters.limit + 1)
   const hasMore = rows.length > filters.limit
   const items = hasMore ? rows.slice(0, filters.limit) : rows
-  const last = items.at(-1)
+  const last = items[items.length - 1]
 
   return {
     items: items.map(({ sortTimestamp: rowSortTimestamp, ...item }) => {
