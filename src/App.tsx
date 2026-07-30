@@ -1,13 +1,16 @@
 import { useState, useEffect } from 'react'
 import './App.css'
-import { sampleOpportunities, sampleStudentProfile } from './data/opportunities'
+import { sampleStudentProfile } from './data/opportunities'
 import type { OpportunityType, StudentProfile, Opportunity } from './types'
 import { calculateMatch, getMatchColor } from './utils/matching'
 import { useAIGuidance } from './hooks/useAIGuidance'
+import ResumeBuilder from './components/ResumeBuilder'
+import { useOpportunities } from './hooks/useOpportunities'
 
-type TabType = 'opportunities' | 'saved' | 'deadlines' | 'profile'
+type TabType = 'opportunities' | 'saved' | 'deadlines' | 'resume' | 'profile'
 
 const opportunityTypeEmojis: Record<OpportunityType, string> = {
+  job: '📣',
   internship: '💼',
   scholarship: '🎓',
   research: '🔬',
@@ -19,6 +22,7 @@ const opportunityTypeEmojis: Record<OpportunityType, string> = {
 }
 
 const opportunityTypeColors: Record<OpportunityType, string> = {
+  job: '#0f766e',
   internship: '#0066cc',
   scholarship: '#7cb342',
   research: '#c2185b',
@@ -31,6 +35,14 @@ const opportunityTypeColors: Record<OpportunityType, string> = {
 
 function App() {
   const [activeTab, setActiveTab] = useState<TabType>('opportunities')
+  const {
+    opportunities,
+    providers: jobProviders,
+    warnings: jobWarnings,
+    loading: jobsLoading,
+    usingFallback: usingJobFallback,
+    refresh: refreshJobs
+  } = useOpportunities()
   const SAVED_KEY = 'soe-saved-opportunity-ids'
   const STATUS_KEY = 'soe-application-statuses'
   const APPLY_KEY = 'soe-apply-clicked-ids'
@@ -142,7 +154,7 @@ function App() {
 
   const isSaved = (opportunityId: string) => savedIds.has(opportunityId)
 
-  const savedOpportunities = sampleOpportunities.filter((opp) => isSaved(opp.id))
+  const savedOpportunities = opportunities.filter((opp) => isSaved(opp.id))
 
   // profile state used for matching
   // profile initialized from sampleStudentProfile
@@ -156,13 +168,13 @@ function App() {
       const params = new URLSearchParams(window.location.search)
       const oppId = params.get('opp')
       if (oppId) {
-        const found = sampleOpportunities.find((o) => o.id === oppId)
+        const found = opportunities.find((o) => o.id === oppId)
         if (found) setSelectedOpportunity(found)
       }
     } catch {
       // ignore
     }
-  }, [])
+  }, [opportunities])
 
   // close on Escape
   useEffect(() => {
@@ -199,7 +211,7 @@ function App() {
     setSelectedOpportunity(null)
   }
 
-  const renderOpportunityCard = (opp: typeof sampleOpportunities[0]) => {
+  const renderOpportunityCard = (opp: Opportunity) => {
     const match = calculateMatch(opp, profile, parsedResumeHighlights)
     const matchColor = getMatchColor(match.matchScore)
 
@@ -251,8 +263,18 @@ function App() {
           </div>
           <div className="meta-item">
             <span className="meta-label">📅 Deadline:</span>
-            <span>{opp.deadline}</span>
+            <span>{opp.deadline || 'Not listed'}</span>
           </div>
+          <div className="meta-item">
+            <span className="meta-label">🕒 Posted:</span>
+            <span>{new Date(opp.postedDate).toLocaleDateString()}</span>
+          </div>
+          {opp.compensation && (
+            <div className="meta-item">
+              <span className="meta-label">💵 Compensation:</span>
+              <span>{opp.compensation}</span>
+            </div>
+          )}
         </div>
 
         {opp.requiredSkills.length > 0 && (
@@ -300,6 +322,10 @@ function App() {
   const [filterType, setFilterType] = useState<'all' | OpportunityType>('all')
   const [filterLocation, setFilterLocation] = useState<string>('any')
   const [deadlineUrgency, setDeadlineUrgency] = useState<'all' | 'due_soon' | 'due_later'>('all')
+  const [workplaceFilter, setWorkplaceFilter] = useState<'all' | 'remote' | 'hybrid' | 'location'>('all')
+  const [roleLevelFilter, setRoleLevelFilter] = useState<'all' | 'internship' | 'new-grad' | 'apprenticeship'>('all')
+  const [postedWithin, setPostedWithin] = useState<'all' | '7' | '30'>('all')
+  const [salaryOnly, setSalaryOnly] = useState(false)
   const [onlySavedDeadlines, setOnlySavedDeadlines] = useState<boolean>(false)
   const [includePastDeadlines, setIncludePastDeadlines] = useState<boolean>(false)
 
@@ -398,6 +424,7 @@ function App() {
   }
 
   const allOpportunityTypes: OpportunityType[] = [
+    'job',
     'internship',
     'scholarship',
     'research',
@@ -413,6 +440,10 @@ function App() {
     setFilterType('all')
     setFilterLocation('any')
     setDeadlineUrgency('all')
+    setWorkplaceFilter('all')
+    setRoleLevelFilter('all')
+    setPostedWithin('all')
+    setSalaryOnly(false)
   }
 
   const renderContent = () => {
@@ -420,10 +451,10 @@ function App() {
       case 'opportunities':
         // prepare location options
         const locations = Array.from(
-          new Set(sampleOpportunities.map((o) => o.location))
+          new Set(opportunities.map((o) => o.location))
         )
 
-        const filtered = sampleOpportunities.filter((opp) => {
+        const filtered = opportunities.filter((opp) => {
           const q = searchQuery.trim().toLowerCase()
 
           // search across multiple fields
@@ -447,6 +478,36 @@ function App() {
           // location filter
           if (filterLocation !== 'any') {
             if (!opp.location.toLowerCase().includes(filterLocation.toLowerCase())) return false
+          }
+
+          const workplaceText = `${opp.location} ${opp.title} ${opp.tags.join(' ')}`.toLowerCase()
+          if (workplaceFilter === 'remote' && !workplaceText.includes('remote')) return false
+          if (workplaceFilter === 'hybrid' && !workplaceText.includes('hybrid')) return false
+          if (
+            workplaceFilter === 'location' &&
+            (workplaceText.includes('remote') || workplaceText.includes('hybrid'))
+          ) {
+            return false
+          }
+
+          if (roleLevelFilter === 'internship' && opp.type !== 'internship') return false
+          if (roleLevelFilter === 'new-grad' && !opp.tags.includes('new-grad')) return false
+          if (
+            roleLevelFilter === 'apprenticeship' &&
+            !opp.tags.includes('apprenticeship')
+          ) {
+            return false
+          }
+
+          if (salaryOnly && !opp.compensation) return false
+
+          if (postedWithin !== 'all') {
+            const postedDate = new Date(opp.postedDate)
+            if (isNaN(postedDate.getTime())) return false
+            const ageInDays = Math.floor(
+              (Date.now() - postedDate.getTime()) / (1000 * 60 * 60 * 24)
+            )
+            if (ageInDays < 0 || ageInDays > Number(postedWithin)) return false
           }
 
           // deadline urgency
@@ -477,10 +538,29 @@ function App() {
             <h2>Opportunities</h2>
             <p>Your personalized feed of campus and external opportunities</p>
 
+            <div className={`live-feed-status ${usingJobFallback ? 'fallback' : ''}`}>
+              <div>
+                <strong>
+                  {jobsLoading
+                    ? 'Loading live jobs...'
+                    : usingJobFallback
+                      ? 'Showing sample opportunities'
+                      : `${opportunities.length} live student opportunities`}
+                </strong>
+                {!jobsLoading && !usingJobFallback && (
+                  <span>From {jobProviders.join(', ')}</span>
+                )}
+                {jobWarnings.length > 0 && <span>{jobWarnings.join(' ')}</span>}
+              </div>
+              <button type="button" onClick={() => void refreshJobs()} disabled={jobsLoading}>
+                {jobsLoading ? 'Refreshing...' : 'Refresh jobs'}
+              </button>
+            </div>
+
             {/* Dashboard summary */}
             <div className="dashboard-summary">
               <div className="dash-item">
-                <div className="dash-value">{sampleOpportunities.length}</div>
+                <div className="dash-value">{opportunities.length}</div>
                 <div className="dash-label">Total opportunities</div>
               </div>
               <div className="dash-item">
@@ -488,7 +568,7 @@ function App() {
                 <div className="dash-label">Saved</div>
               </div>
               <div className="dash-item">
-                <div className="dash-value">{sampleOpportunities.filter((o) => {
+                <div className="dash-value">{opportunities.filter((o) => {
                   const d = new Date(o.deadline)
                   if (isNaN(d.getTime())) return false
                   const days = Math.ceil((d.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
@@ -497,7 +577,7 @@ function App() {
                 <div className="dash-label">Due soon (≤14d)</div>
               </div>
               <div className="dash-item">
-                <div className="dash-value">{Math.max(0, ...sampleOpportunities.map((o) => calculateMatch(o, profile, parsedResumeHighlights).matchScore))}%</div>
+                <div className="dash-value">{Math.max(0, ...opportunities.map((o) => calculateMatch(o, profile, parsedResumeHighlights).matchScore))}%</div>
                 <div className="dash-label">Highest match</div>
               </div>
               <div className="dash-helper">Tip: Edit your profile to improve matches. Use Save to bookmark opportunities.</div>
@@ -513,6 +593,7 @@ function App() {
 
               <select className="filter-select" value={filterType} onChange={(e) => setFilterType(e.target.value as any)}>
                 <option value="all">All types</option>
+                <option value="job">Job</option>
                 <option value="internship">Internship</option>
                 <option value="scholarship">Scholarship</option>
                 <option value="research">Research</option>
@@ -535,6 +616,47 @@ function App() {
                 <option value="due_soon">Due soon (≤ 14 days)</option>
                 <option value="due_later">Due later</option>
               </select>
+
+              <select
+                className="filter-select"
+                value={workplaceFilter}
+                onChange={(e) => setWorkplaceFilter(e.target.value as typeof workplaceFilter)}
+              >
+                <option value="all">Any workplace</option>
+                <option value="remote">Remote</option>
+                <option value="hybrid">Hybrid</option>
+                <option value="location">Location-based</option>
+              </select>
+
+              <select
+                className="filter-select"
+                value={roleLevelFilter}
+                onChange={(e) => setRoleLevelFilter(e.target.value as typeof roleLevelFilter)}
+              >
+                <option value="all">Any career level</option>
+                <option value="internship">Internship</option>
+                <option value="new-grad">New graduate</option>
+                <option value="apprenticeship">Apprenticeship</option>
+              </select>
+
+              <select
+                className="filter-select"
+                value={postedWithin}
+                onChange={(e) => setPostedWithin(e.target.value as typeof postedWithin)}
+              >
+                <option value="all">Any posting date</option>
+                <option value="7">Posted within 7 days</option>
+                <option value="30">Posted within 30 days</option>
+              </select>
+
+              <label className="salary-filter">
+                <input
+                  type="checkbox"
+                  checked={salaryOnly}
+                  onChange={(e) => setSalaryOnly(e.target.checked)}
+                />
+                Salary listed
+              </label>
 
               <button className="btn-clear" onClick={resetFilters}>Clear</button>
             </div>
@@ -597,7 +719,7 @@ function App() {
         const msPerDay = 1000 * 60 * 60 * 24
 
         // map opportunities to deadline items with computed daysRemaining and urgency
-        let withDeadlines = sampleOpportunities
+        let withDeadlines = opportunities
           .map((opp) => {
             const d = new Date(opp.deadline)
             const daysRemaining = Math.ceil((d.getTime() - now.getTime()) / msPerDay)
@@ -861,6 +983,8 @@ function App() {
             </div>
           </div>
         )
+      case 'resume':
+        return <ResumeBuilder profile={profile} resumeHighlights={resumeHighlights} />
       default:
         return null
     }
@@ -895,6 +1019,12 @@ function App() {
           Deadlines
         </button>
         <button
+          className={`nav-tab ${activeTab === 'resume' ? 'active' : ''}`}
+          onClick={() => setActiveTab('resume')}
+        >
+          Resume Builder
+        </button>
+        <button
           className={`nav-tab ${activeTab === 'profile' ? 'active' : ''}`}
           onClick={() => setActiveTab('profile')}
         >
@@ -925,7 +1055,16 @@ function App() {
 
             <div className="modal-body">
               <p className="opp-source">{selectedOpportunity.source} · {selectedOpportunity.location}</p>
-              <p><strong>Deadline:</strong> {new Date(selectedOpportunity.deadline).toLocaleDateString()}</p>
+              <p>
+                <strong>Deadline:</strong>{' '}
+                {selectedOpportunity.deadline
+                  ? new Date(selectedOpportunity.deadline).toLocaleDateString()
+                  : 'Not listed'}
+              </p>
+              <p><strong>Posted:</strong> {new Date(selectedOpportunity.postedDate).toLocaleDateString()}</p>
+              {selectedOpportunity.compensation && (
+                <p><strong>Compensation:</strong> {selectedOpportunity.compensation}</p>
+              )}
               <p className="opp-description" style={{ marginTop: 8 }}>{selectedOpportunity.description}</p>
 
               <div style={{ marginTop: 12 }}>

@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "opportunity_sync_runs_one_running_per_source_uidx" ON "opportunity_sync_runs" USING btree ("source_id") WHERE "opportunity_sync_runs"."status" = 'RUNNING';

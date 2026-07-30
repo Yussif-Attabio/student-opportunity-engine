@@ -1,0 +1,25 @@
+[
+  {
+    "id": "lever-123",
+    "text": "New Grad Software Engineer",
+    "hostedUrl": "https://jobs.lever.co/example/lever-123",
+    "applyUrl": "https://jobs.lever.co/example/lever-123/apply",
+    "description": "<p>Build reliable systems.</p>",
+    "descriptionPlain": "Build reliable systems.",
+    "workplaceType": "hybrid",
+    "country": "US",
+    "categories": {
+      "location": "San Francisco, CA",
+      "allLocations": ["San Francisco, CA"],
+      "commitment": "Full-time",
+      "team": "Platform",
+      "department": "Engineering"
+    },
+    "salaryRange": {
+      "min": 100000,
+      "max": 125000,
+      "currency": "USD",
+      "interval": "per-year-salary"
+    }
+  }
+]

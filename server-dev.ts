@@ -9,6 +9,7 @@ import type { IncomingMessage, ServerResponse } from 'http'
 import { existsSync } from 'node:fs'
 import path from 'node:path'
 import { config as loadEnv } from 'dotenv'
+import { getJobsFeed } from './server/jobs.js'
 
 const envLocalPath = path.resolve(process.cwd(), '.env.local')
 const envPath = existsSync(envLocalPath) ? envLocalPath : path.resolve(process.cwd(), '.env')
@@ -108,9 +109,9 @@ const parseAIResponse = (text: string): { why: string; highlights: string[]; tip
   const strengthsMatch = text.match(/MATCHING STRENGTHS:\s*(.+?)(?=RECOMMENDATION:|$)/is)
   const recMatch = text.match(/RECOMMENDATION:\s*(.+?)$/is)
 
-  const why = whyMatch ? whyMatch[1].trim() : ''
-  const strengthsText = strengthsMatch ? strengthsMatch[1].trim() : ''
-  const recommendation = recMatch ? recMatch[1].trim() : ''
+  const why = whyMatch?.[1]?.trim() ?? ''
+  const strengthsText = strengthsMatch?.[1]?.trim() ?? ''
+  const recommendation = recMatch?.[1]?.trim() ?? ''
 
   const highlights = strengthsText
     .split(/[,;]/)
@@ -170,6 +171,21 @@ const handleRequest = async (req: IncomingMessage, res: ServerResponse): Promise
   if (req.method === 'OPTIONS') {
     res.writeHead(200)
     res.end()
+    return
+  }
+
+  if (req.method === 'GET' && req.url?.startsWith('/api/jobs')) {
+    try {
+      const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`)
+      const feed = await getJobsFeed(url.searchParams.get('refresh') === '1')
+      res.setHeader('Cache-Control', 'public, max-age=60')
+      res.writeHead(200)
+      res.end(JSON.stringify(feed))
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unable to load jobs'
+      res.writeHead(502)
+      res.end(JSON.stringify({ error: message }))
+    }
     return
   }
 
@@ -262,6 +278,7 @@ server.listen(PORT, () => {
   
   console.log(`[dev-server] API server listening on http://localhost:${PORT}`)
   console.log(`[dev-server] Handling POST /api/generate-guidance`)
+  console.log(`[dev-server] Handling GET /api/jobs`)
   console.log('[AI] Provider: Groq')
   
   if (!config.valid) {

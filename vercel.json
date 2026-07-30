@@ -1,0 +1,16 @@
+{
+  "crons": [
+    {
+      "path": "/api/internal/cron/dispatch-sources",
+      "schedule": "*/15 * * * *"
+    }
+  ],
+  "functions": {
+    "api/internal/jobs/sync-source.ts": {
+      "maxDuration": 300
+    },
+    "api/internal/jobs/classify-opportunity.ts": {
+      "maxDuration": 120
+    }
+  }
+}

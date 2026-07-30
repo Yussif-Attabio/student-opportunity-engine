@@ -1,0 +1,56 @@
+{
+  "apiVersion": "1",
+  "jobs": [
+    {
+      "title": "Product Engineering Intern",
+      "location": "Remote",
+      "secondaryLocations": [{ "location": "New York, NY" }],
+      "department": "Engineering",
+      "team": "Product",
+      "isListed": true,
+      "isRemote": true,
+      "workplaceType": "Remote",
+      "descriptionHtml": "<p>Ship product features.</p>",
+      "descriptionPlain": "Ship product features.",
+      "publishedAt": "2026-06-01T12:00:00Z",
+      "employmentType": "Intern",
+      "address": {
+        "postalAddress": {
+          "addressLocality": "New York",
+          "addressRegion": "NY",
+          "addressCountry": "USA"
+        }
+      },
+      "jobUrl": "https://jobs.ashbyhq.com/example/ashby-123",
+      "applyUrl": "https://jobs.ashbyhq.com/example/ashby-123/apply",
+      "compensation": {
+        "compensationTiers": [
+          {
+            "components": [
+              {
+                "compensationType": "Salary",
+                "interval": "1 YEAR",
+                "currencyCode": "USD",
+                "minValue": 80000,
+                "maxValue": 90000
+              },
+              {
+                "compensationType": "Equity",
+                "interval": "1 YEAR",
+                "currencyCode": null,
+                "minValue": null,
+                "maxValue": null
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "title": "Unlisted Role",
+      "isListed": false,
+      "jobUrl": "https://jobs.ashbyhq.com/example/unlisted",
+      "applyUrl": "https://jobs.ashbyhq.com/example/unlisted/apply"
+    }
+  ]
+}

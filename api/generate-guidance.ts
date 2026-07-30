@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import type { StudentProfile, Opportunity } from '../src/types'
+import type { StudentProfile, Opportunity } from '../src/types.js'
 
 // Request payload validation
 interface GuidanceRequest {
@@ -71,9 +71,9 @@ const parseAIResponse = (text: string): { why: string; highlights: string[]; tip
   const strengthsMatch = text.match(/MATCHING STRENGTHS:\s*(.+?)(?=RECOMMENDATION:|$)/is)
   const recMatch = text.match(/RECOMMENDATION:\s*(.+?)$/is)
 
-  const why = whyMatch ? whyMatch[1].trim() : ''
-  const strengthsText = strengthsMatch ? strengthsMatch[1].trim() : ''
-  const recommendation = recMatch ? recMatch[1].trim() : ''
+  const why = whyMatch?.[1]?.trim() ?? ''
+  const strengthsText = strengthsMatch?.[1]?.trim() ?? ''
+  const recommendation = recMatch?.[1]?.trim() ?? ''
 
   const highlights = strengthsText
     .split(/[,;]/)

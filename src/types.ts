@@ -1,4 +1,5 @@
 export type OpportunityType =
+  | 'job'
   | 'internship'
   | 'scholarship'
   | 'research'
