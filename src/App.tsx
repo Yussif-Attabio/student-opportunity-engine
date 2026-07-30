@@ -1087,7 +1087,10 @@ function App() {
               {selectedOpportunity.compensation && (
                 <p><strong>Compensation:</strong> {selectedOpportunity.compensation}</p>
               )}
-              <p className="opp-description" style={{ marginTop: 8 }}>{selectedOpportunity.description}</p>
+              <section className="full-description">
+                <h3>Full description</h3>
+                <p>{selectedOpportunity.fullDescription ?? selectedOpportunity.description}</p>
+              </section>
 
               <div style={{ marginTop: 12 }}>
                 <strong>Required skills:</strong>

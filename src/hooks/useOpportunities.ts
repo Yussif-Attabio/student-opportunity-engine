@@ -92,6 +92,10 @@ const mapPersistedOpportunity = (
   description: summarizeDescription(
     opportunity.studentFacingSummary ?? opportunity.descriptionText
   ),
+  fullDescription:
+    opportunity.descriptionText ??
+    opportunity.studentFacingSummary ??
+    'See the official posting for details.',
   requiredSkills: opportunity.requiredSkills,
   relatedMajors: opportunity.majors,
   tags: [

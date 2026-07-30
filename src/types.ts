@@ -35,6 +35,7 @@ export interface Opportunity {
   location: string
   deadline: string
   description: string
+  fullDescription?: string
   requiredSkills: string[]
   relatedMajors: string[]
   tags: string[]

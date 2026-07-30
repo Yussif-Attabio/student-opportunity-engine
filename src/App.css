@@ -293,6 +293,24 @@
   -webkit-line-clamp: 3;
 }
 
+.full-description {
+  margin-top: 16px;
+}
+
+.full-description h3 {
+  margin: 0 0 8px;
+  color: var(--text-h);
+  font-size: 16px;
+}
+
+.full-description p {
+  margin: 0;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.6;
+  white-space: pre-line;
+}
+
 .match-reasons {
   background: var(--accent-bg);
   border-left: 3px solid var(--accent);
