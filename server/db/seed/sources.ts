@@ -119,6 +119,22 @@ export const verifiedSeedSources: CreateSourceInput[] = [
       collectionMethod: 'SITE_SPECIFIC_STATIC_HTML'
     }
   },
+  {
+    organizationName: 'Google',
+    sourceType: 'CUSTOM_SCRAPER',
+    sourceIdentifier: 'google-careers-sitemap',
+    careersUrl:
+      'https://www.google.com/about/careers/applications/jobs/sitemap.xml',
+    enabled: true,
+    syncFrequencyMinutes: 1440,
+    metadata: {
+      verifiedAt: '2026-07-30',
+      robotsVerifiedAt: '2026-07-30',
+      approvedHosts: ['www.google.com', 'careers.google.com'],
+      focus: ['INTERNSHIP', 'APPRENTICESHIP', 'STUDENT_RESEARCH'],
+      collectionMethod: 'OFFICIAL_SITEMAP_AND_STATIC_HTML'
+    }
+  },
   ...([
     ['Airbnb', 'airbnb', 'https://careers.airbnb.com/'],
     ['Cloudflare', 'cloudflare', 'https://www.cloudflare.com/careers/'],

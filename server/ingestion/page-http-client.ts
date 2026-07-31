@@ -19,8 +19,20 @@ export interface HtmlPage {
   finalUrl: string
 }
 
+export interface XmlPage {
+  xml: string
+  finalUrl: string
+}
+
 export interface HtmlHttpClient {
   getHtml(url: URL, approvedHosts: readonly string[]): Promise<HtmlPage>
+}
+
+export interface CrawlPageHttpClient extends HtmlHttpClient {
+  getXml?(
+    url: URL,
+    approvedHosts: readonly string[]
+  ): Promise<XmlPage>
 }
 
 interface ResolvedAddress {
@@ -182,7 +194,7 @@ const readLimitedBody = async (response: PageResponse, maxBytes: number) => {
   return body + decoder.decode()
 }
 
-export class SafeHtmlHttpClient implements HtmlHttpClient {
+export class SafeHtmlHttpClient implements CrawlPageHttpClient {
   private readonly timeoutMs: number
   private readonly maxResponseBytes: number
   private readonly maxRobotsBytes: number
@@ -234,12 +246,41 @@ export class SafeHtmlHttpClient implements HtmlHttpClient {
     return { html: response.body, finalUrl: response.finalUrl.toString() }
   }
 
+  async getXml(url: URL, approvedHosts: readonly string[]): Promise<XmlPage> {
+    const hosts = new Set(approvedHosts.map(normalizeHost).filter(Boolean))
+    if (hosts.size === 0) {
+      throw new SourceFetchError('At least one approved page host is required', {
+        retryable: false
+      })
+    }
+    const response = await this.requestText(
+      new URL(url),
+      hosts,
+      this.maxResponseBytes,
+      this.maxRedirects,
+      true,
+      'application/xml,text/xml;q=0.9'
+    )
+    if (
+      !response.contentType.includes('application/xml') &&
+      !response.contentType.includes('text/xml') &&
+      !response.contentType.includes('+xml')
+    ) {
+      throw new SourceFetchError(
+        `Career page returned unsupported content type: ${response.contentType}`,
+        { retryable: false, statusCode: response.status }
+      )
+    }
+    return { xml: response.body, finalUrl: response.finalUrl.toString() }
+  }
+
   private async requestText(
     url: URL,
     approvedHosts: ReadonlySet<string>,
     maxBytes: number,
     redirectsRemaining: number,
-    enforceRobots: boolean
+    enforceRobots: boolean,
+    accept = 'text/html,application/xhtml+xml,text/plain;q=0.9'
   ): Promise<TextResponse> {
     const addresses = await this.validateDestination(url, approvedHosts)
     if (enforceRobots) await this.assertRobotsAllowed(url, approvedHosts)
@@ -251,7 +292,7 @@ export class SafeHtmlHttpClient implements HtmlHttpClient {
         method: 'GET',
         redirect: 'manual',
         headers: {
-          Accept: 'text/html,application/xhtml+xml,text/plain;q=0.9',
+          Accept: accept,
           'User-Agent': this.userAgent
         },
         signal: AbortSignal.timeout(this.timeoutMs),
@@ -288,7 +329,8 @@ export class SafeHtmlHttpClient implements HtmlHttpClient {
         approvedHosts,
         maxBytes,
         redirectsRemaining - 1,
-        enforceRobots
+        enforceRobots,
+        accept
       )
     }
 

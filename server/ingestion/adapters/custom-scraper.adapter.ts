@@ -13,7 +13,7 @@ import {
   sanitizeDescriptionHtml,
   slugify
 } from '../normalization-helpers.js'
-import type { HtmlHttpClient } from '../page-http-client.js'
+import type { CrawlPageHttpClient } from '../page-http-client.js'
 import { stableHash } from '../stable-hash.js'
 
 const sleep = (milliseconds: number) =>
@@ -27,7 +27,7 @@ export class CustomScraperAdapter implements OpportunitySourceAdapter {
   private readonly validatedJobs = new Map<string, RawOpportunity[]>()
 
   constructor(
-    private readonly httpClient: HtmlHttpClient,
+    private readonly httpClient: CrawlPageHttpClient,
     private readonly scrapers: CustomScraperRegistry,
     private readonly wait: (milliseconds: number) => Promise<void> = sleep
   ) {}
@@ -158,15 +158,19 @@ export class CustomScraperAdapter implements OpportunitySourceAdapter {
   private async crawl(
     scraper: NonNullable<ReturnType<CustomScraperRegistry['get']>>
   ): Promise<RawOpportunity[]> {
-    const listing = await this.httpClient.getHtml(
-      new URL(scraper.listingUrl),
-      scraper.approvedHosts
-    )
-    if (!scraper.validateListing(listing.html, listing.finalUrl)) {
+    const listing =
+      scraper.listingFormat === 'XML'
+        ? await this.getXmlListing(scraper)
+        : await this.httpClient.getHtml(
+            new URL(scraper.listingUrl),
+            scraper.approvedHosts
+          )
+    const listingText = 'xml' in listing ? listing.xml : listing.html
+    if (!scraper.validateListing(listingText, listing.finalUrl)) {
       throw new Error('Custom scraper listing-page structure is no longer recognized')
     }
     const resolvedDetailUrls = scraper
-      .extractDetailUrls(listing.html, listing.finalUrl)
+      .extractDetailUrls(listingText, listing.finalUrl)
       .flatMap((value) => {
         try {
           return [new URL(value, listing.finalUrl)]
@@ -209,5 +213,17 @@ export class CustomScraperAdapter implements OpportunitySourceAdapter {
       }
     }
     return jobs
+  }
+
+  private async getXmlListing(
+    scraper: NonNullable<ReturnType<CustomScraperRegistry['get']>>
+  ) {
+    if (!this.httpClient.getXml) {
+      throw new Error('Custom scraper XML retrieval is not available')
+    }
+    return this.httpClient.getXml(
+      new URL(scraper.listingUrl),
+      scraper.approvedHosts
+    )
   }
 }

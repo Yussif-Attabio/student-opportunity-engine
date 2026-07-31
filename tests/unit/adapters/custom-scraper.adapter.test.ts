@@ -203,6 +203,30 @@ describe('CustomScraperAdapter', () => {
     expect(raw).toEqual([])
   })
 
+  it('uses bounded XML retrieval for sitemap listings', async () => {
+    const xmlDefinition: CustomScraperDefinition = {
+      ...definition,
+      listingFormat: 'XML',
+      validateListing: (xml) => xml.includes('<urlset'),
+      extractDetailUrls: () => []
+    }
+    const client = {
+      getHtml: vi.fn(),
+      getXml: vi.fn().mockResolvedValue({
+        xml: '<urlset></urlset>',
+        finalUrl: definition.listingUrl
+      })
+    }
+    const adapter = new CustomScraperAdapter(
+      client,
+      new CustomScraperRegistry([xmlDefinition])
+    )
+
+    expect((await adapter.validateSource(source())).valid).toBe(true)
+    expect(client.getXml).toHaveBeenCalledOnce()
+    expect(client.getHtml).not.toHaveBeenCalled()
+  })
+
   it('rejects a listing whose registered structure is no longer recognized', async () => {
     const brokenDefinition = {
       ...definition,

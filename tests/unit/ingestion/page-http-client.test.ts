@@ -167,4 +167,36 @@ describe('SafeHtmlHttpClient', () => {
       finalUrl: 'https://careers.example.com/jobs'
     })
   })
+
+  it('returns bounded XML after checking robots policy', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response('User-agent: *\nAllow: /jobs/sitemap.xml', {
+          status: 200,
+          headers: { 'content-type': 'text/plain' }
+        })
+      )
+      .mockResolvedValueOnce(
+        new Response('<urlset><url /></urlset>', {
+          status: 200,
+          headers: { 'content-type': 'text/xml' }
+        })
+      )
+    vi.stubGlobal('fetch', fetchMock)
+    const client = new SafeHtmlHttpClient({
+      resolveHost: publicResolver,
+      fetchRequest: mockFetchRequest
+    })
+
+    await expect(
+      client.getXml(
+        new URL('https://careers.example.com/jobs/sitemap.xml'),
+        ['careers.example.com']
+      )
+    ).resolves.toMatchObject({
+      xml: '<urlset><url /></urlset>',
+      finalUrl: 'https://careers.example.com/jobs/sitemap.xml'
+    })
+  })
 })

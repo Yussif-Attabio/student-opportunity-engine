@@ -25,6 +25,7 @@ export interface CustomScraperDefinition {
   id: string
   organizationName: string
   listingUrl: string
+  listingFormat?: 'HTML' | 'XML'
   approvedHosts: readonly string[]
   maxJobs: number
   crawlDelayMs: number

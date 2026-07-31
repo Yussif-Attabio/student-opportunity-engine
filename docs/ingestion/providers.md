@@ -46,6 +46,18 @@ runs at most daily. It was live-verified on 2026-07-30 with 10 public student-de
 pages, including education, culture, science, communications, and oversight
 internships. Non-student search results are discarded before detail fetching.
 
+`google-careers-sitemap` reads Google's official, robots-allowed job sitemap and only
+selects detail URLs whose slugs contain exact student, internship, apprenticeship, or
+graduate terms. It never crawls disallowed result pagination or calls Google's
+internal RPC endpoints. Detail pages are static, capped at 25 per daily run, and
+restricted to `careers.google.com` redirects into the canonical `www.google.com`
+career path. Live verification on 2026-07-30 found seven current student researcher
+and apprenticeship roles across the United States, Canada, and Switzerland.
+
+Microsoft Careers is not automated. Its current application portal has no verified
+supported public jobs API, uses application-platform controls including CAPTCHA, and
+requires explicit permission or legal approval before a connector may be registered.
+
 To add a provider, implement `OpportunitySourceAdapter`, validate responses with Zod,
 use a fixed provider-domain allowlist, register it in `create-adapter-registry.ts`, add
 fixtures and tests, then add its enum value through a migration. Never bypass

@@ -28,7 +28,8 @@ only and never executes page scripts.
 `CUSTOM_SCRAPER` sources use a compiled registry of site-specific definitions. Each
 definition fixes the organization, listing URL, approved hosts, extraction code,
 maximum jobs, and crawl delay. The shared adapter fetches listing and detail pages
-through the same safe HTML client, processes details sequentially, and isolates a
+through the same safe page client, which supports bounded HTML and XML without
+executing scripts. It processes details sequentially and isolates a
 failed detail page without turning the crawler into an arbitrary-URL service.
 
 The existing `/api/jobs` request-time feed remains a temporary compatibility path.
