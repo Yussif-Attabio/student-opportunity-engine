@@ -25,5 +25,11 @@ checks robots.txt, follows only bounded redirects to explicitly approved hosts, 
 an identifying User-Agent, and limits response time and size. It parses static HTML
 only and never executes page scripts.
 
+`CUSTOM_SCRAPER` sources use a compiled registry of site-specific definitions. Each
+definition fixes the organization, listing URL, approved hosts, extraction code,
+maximum jobs, and crawl delay. The shared adapter fetches listing and detail pages
+through the same safe HTML client, processes details sequentially, and isolates a
+failed detail page without turning the crawler into an arbitrary-URL service.
+
 The existing `/api/jobs` request-time feed remains a temporary compatibility path.
 New integrations should use the persisted `/api/opportunities` API.

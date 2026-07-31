@@ -23,6 +23,12 @@ handlers, iframes, and unsafe URL schemes are removed before storage.
 Provider tokens, authorization headers, descriptions, raw payloads, and resumes are
 redacted from structured logs. Queue payloads contain database identifiers only.
 
-Do not add arbitrary user-supplied URL fetching. Future custom scrapers must be
+Do not add arbitrary user-supplied URL fetching. Custom scrapers must be
 registered by identifier, restricted to reviewed domains, covered by saved fixtures,
 and individually disableable.
+
+The custom scraper adapter enforces that boundary in code: source identifiers must
+resolve to a compiled definition; organization and listing URL must match it exactly;
+discovered URLs are filtered to its host allowlist; each page is rechecked against
+robots.txt and pinned public DNS; crawls are sequential, delayed, and capped at 25
+details. Provider HTML is never stored as opportunity raw data.

@@ -2,6 +2,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { getDatabase } from '../db/client.js'
 import { requireAdmin } from '../auth/require-admin.js'
 import { parseJsonBody } from '../http/json-body.js'
+import { createAdapterRegistry } from '../ingestion/create-adapter-registry.js'
 import { getUuidRouteParameter } from '../http/route-params.js'
 import {
   isImplementedSourceType,
@@ -30,10 +31,36 @@ export default async function handler(request: VercelRequest, response: VercelRe
   ) {
     return response.status(400).json({ error: 'This source type is not yet supported' })
   }
-  const source = await new SourceRepository(database).update(
-    getUuidRouteParameter(request, 'id'),
-    parsed.data
-  )
+  const repository = new SourceRepository(database)
+  const sourceId = getUuidRouteParameter(request, 'id')
+  const existing = await repository.getById(sourceId)
+  if (!existing) return response.status(404).json({ error: 'Source not found' })
+  const configurationChanged = [
+    'organizationName',
+    'sourceType',
+    'sourceIdentifier',
+    'careersUrl',
+    'metadata'
+  ].some((key) => key in parsed.data)
+  const candidate = { ...existing, ...parsed.data }
+  if (
+    candidate.enabled &&
+    (configurationChanged || parsed.data.enabled === true)
+  ) {
+    if (!isImplementedSourceType(candidate.sourceType)) {
+      return response.status(400).json({ error: 'This source type is not yet supported' })
+    }
+    const validation = await createAdapterRegistry()
+      .get(candidate.sourceType)
+      .validateSource(candidate)
+    if (!validation.valid) {
+      return response.status(422).json({
+        error: 'The source could not be validated',
+        validation
+      })
+    }
+  }
+  const source = await repository.update(sourceId, parsed.data)
   if (!source) return response.status(404).json({ error: 'Source not found' })
   return response.status(200).json({ source })
 }

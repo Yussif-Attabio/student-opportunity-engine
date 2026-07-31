@@ -9,8 +9,10 @@
 | Structured data | Exact career-page hostname | Explicit HTTPS page containing `JobPosting` JSON-LD |
 
 Adzuna provides optional broad, multi-company discovery. Configure
-`ADZUNA_APP_ID` and `ADZUNA_APP_KEY`, then rerun `npm run db:seed` to enable its
-United States internship source. Adzuna listings must retain their redirect URL
+`ADZUNA_APP_ID` and `ADZUNA_APP_KEY`, then run `npm run db:seed`. If an existing
+Adzuna source was previously disabled, enable it explicitly through the admin API;
+seeding deliberately preserves all existing enabled/disabled states so takedowns are
+not reversed. Adzuna listings must retain their redirect URL
 and display the required “Jobs by Adzuna” attribution.
 
 Add organizations through `POST /api/admin/sources` or the seed process. A source holds
@@ -30,13 +32,29 @@ The adapter supports a single object, a top-level array, and nested `@graph` rec
 Malformed JSON-LD scripts and malformed individual jobs are isolated. Scripts are
 parsed as text and are never executed.
 
-`CUSTOM_SCRAPER` is reserved for the later approved-domain scraper registry. There is
-intentionally no arbitrary scraper or arbitrary URL fetch endpoint.
+`CUSTOM_SCRAPER` uses an approved-domain registry. A scraper definition must be
+compiled into `server/ingestion/custom-scrapers`, identify one organization and exact
+listing URL, limit crawled detail pages to 25 or fewer, wait at least 100 ms between
+detail requests, and extract only that site's known static HTML. There is intentionally
+no universal scraper or arbitrary URL fetch endpoint. Admin source creation rejects
+identifiers not present in the registry.
+
+The first registered scraper is `unesco-careers`. It reads only the robots-allowed
+`https://careers.unesco.org/search/` listing and `/job/.../{id}/` detail paths, never
+requests the disallowed `/services/`, `/talentcommunity/`, or application paths, and
+runs at most daily. It was live-verified on 2026-07-30 with 10 public student-detail
+pages, including education, culture, science, communications, and oversight
+internships. Non-student search results are discarded before detail fetching.
 
 To add a provider, implement `OpportunitySourceAdapter`, validate responses with Zod,
 use a fixed provider-domain allowlist, register it in `create-adapter-registry.ts`, add
 fixtures and tests, then add its enum value through a migration. Never bypass
 authentication, CAPTCHA, rate limits, robots policy, or terms.
+
+Before adding a custom scraper, confirm no supported official API or usable
+`JobPosting` JSON-LD exists, review robots.txt and site terms, save listing/detail
+fixtures, register only necessary hosts, and document the verification date. Scrapers
+must be removed or disabled when the organization requests a takedown.
 
 `npm run sources:test-public` is an optional network smoke test for verified seed
 identifiers. It is not part of deterministic automated tests.

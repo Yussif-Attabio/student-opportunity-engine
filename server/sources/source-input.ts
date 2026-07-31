@@ -17,7 +17,8 @@ export const implementedSourceTypes = [
   'LEVER',
   'ASHBY',
   'ADZUNA',
-  'STRUCTURED_DATA'
+  'STRUCTURED_DATA',
+  'CUSTOM_SCRAPER'
 ] as const
 
 export const isImplementedSourceType = (

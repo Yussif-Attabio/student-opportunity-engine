@@ -10,6 +10,9 @@ Structured-data tests use saved HTML fixtures and mocked DNS/HTTP responses. Nor
 automated tests must not depend on live career pages. `npm run sources:test-public`
 remains an optional explicit network smoke test.
 
+Custom scraper tests also use saved listing and detail fixtures. Live pages are only
+used during an explicit source verification; normal tests must not crawl the web.
+
 The React client tries persisted `/api/opportunities` first and temporarily falls back to
 the legacy live `/api/jobs` feed while the database is unconfigured.
 

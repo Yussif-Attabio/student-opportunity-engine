@@ -17,7 +17,6 @@ const run = async () => {
         set: {
           organizationName: source.organizationName,
           careersUrl: source.careersUrl,
-          enabled: source.enabled,
           syncFrequencyMinutes: source.syncFrequencyMinutes,
           metadata: source.metadata,
           updatedAt: new Date()

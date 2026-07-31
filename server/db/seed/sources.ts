@@ -104,6 +104,21 @@ export const verifiedSeedSources: CreateSourceInput[] = [
       publicApiDocumentation: 'https://developers.greenhouse.io/job-board.html'
     }
   },
+  {
+    organizationName: 'UNESCO',
+    sourceType: 'CUSTOM_SCRAPER',
+    sourceIdentifier: 'unesco-careers',
+    careersUrl: 'https://careers.unesco.org/search/',
+    enabled: true,
+    syncFrequencyMinutes: 1440,
+    metadata: {
+      verifiedAt: '2026-07-30',
+      robotsVerifiedAt: '2026-07-30',
+      approvedHosts: ['careers.unesco.org'],
+      focus: ['INTERNATIONAL_DEVELOPMENT', 'EDUCATION', 'CULTURE', 'SCIENCE'],
+      collectionMethod: 'SITE_SPECIFIC_STATIC_HTML'
+    }
+  },
   ...([
     ['Airbnb', 'airbnb', 'https://careers.airbnb.com/'],
     ['Cloudflare', 'cloudflare', 'https://www.cloudflare.com/careers/'],
