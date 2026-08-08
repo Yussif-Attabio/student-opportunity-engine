@@ -35,6 +35,14 @@ const opportunityTypeColors: Record<OpportunityType, string> = {
   career_event: '#1976d2'
 }
 
+const MATCH_INCOMPLETE_LABEL = 'Complete your profile to see your match'
+
+const isProfileComplete = (profile: StudentProfile): boolean =>
+  profile.major.trim().length > 0 &&
+  profile.skills.length > 0 &&
+  profile.interests.length > 0 &&
+  profile.preferredOpportunityTypes.length > 0
+
 function App() {
   const [activeTab, setActiveTab] = useState<TabType>('opportunities')
   const [countryFilter, setCountryFilter] = useState<string>('all')
@@ -240,13 +248,19 @@ function App() {
             >
               {opportunityTypeEmojis[opp.type]} {opp.type.replace('_', ' ')}
             </span>
-            <span
-              className="badge match-badge"
-              style={{ backgroundColor: matchColor }}
-              title={`${match.matchScore}% match`}
-            >
-              {match.matchScore}%
-            </span>
+            {profileComplete ? (
+              <span
+                className="badge match-badge"
+                style={{ backgroundColor: matchColor }}
+                title={`${match.matchScore}% match`}
+              >
+                {match.matchScore}%
+              </span>
+            ) : (
+              <span className="badge match-badge incomplete" title={MATCH_INCOMPLETE_LABEL}>
+                {MATCH_INCOMPLETE_LABEL}
+              </span>
+            )}
             {isSaved(opp.id) && (
               <span className={`badge status-badge ${(appStatuses[opp.id] ?? 'Saved').toLowerCase()}`}>{appStatuses[opp.id] ?? 'Saved'}</span>
             )}
@@ -255,7 +269,7 @@ function App() {
 
         <p className="opp-description">{opp.description}</p>
 
-        {match.matchReasons.length > 0 && (
+        {profileComplete && match.matchReasons.length > 0 && (
           <div className="match-reasons">
             <span className="reasons-label">Why it matches:</span>
             <ul className="reasons-list">
@@ -375,6 +389,8 @@ function App() {
     .split(/[\n,]/)
     .map((item) => item.trim())
     .filter(Boolean)
+
+  const profileComplete = isProfileComplete(profile)
 
   const currentMatch = selectedOpportunity
     ? calculateMatch(selectedOpportunity, profile, parsedResumeHighlights)
@@ -569,8 +585,12 @@ function App() {
                 <div className="dash-label">Due soon (≤14d)</div>
               </div>
               <div className="dash-item">
-                <div className="dash-value">{Math.max(0, ...opportunities.map((o) => calculateMatch(o, profile, parsedResumeHighlights).matchScore))}%</div>
-                <div className="dash-label">Highest match</div>
+                <div className="dash-value">
+                  {profileComplete
+                    ? `${Math.max(0, ...opportunities.map((o) => calculateMatch(o, profile, parsedResumeHighlights).matchScore))}%`
+                    : '—'}
+                </div>
+                <div className="dash-label">{profileComplete ? 'Highest match' : MATCH_INCOMPLETE_LABEL}</div>
               </div>
               <div className="dash-helper">Tip: Edit your profile to improve matches. Use Save to bookmark opportunities.</div>
             </div>
@@ -769,7 +789,19 @@ function App() {
           .sort((a, b) => a.d.getTime() - b.d.getTime())
 
         const renderDeadlineItem = (item: typeof withDeadlines[0]) => (
-          <div key={item.opp.id} className={`deadline-item ${item.urgency}`}>
+          <div
+            key={item.opp.id}
+            className={`deadline-item ${item.urgency}`}
+            role="button"
+            tabIndex={0}
+            onClick={() => openDetails(item.opp)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault()
+                openDetails(item.opp)
+              }
+            }}
+          >
             <div className="deadline-left">
               <h3 className="deadline-title">{item.opp.title}</h3>
               <p className="deadline-source">{item.opp.source} · {item.opp.type.replace('_', ' ')}</p>
@@ -1068,9 +1100,15 @@ function App() {
               <h2 id="modal-title">{selectedOpportunity.title}</h2>
               <div className="modal-header-right">
                 <span className="opp-type-badge" style={{ backgroundColor: opportunityTypeColors[selectedOpportunity.type] }}>{opportunityTypeEmojis[selectedOpportunity.type]} {selectedOpportunity.type.replace('_', ' ')}</span>
-                <span className="badge match-badge" style={{ backgroundColor: getMatchColor(currentMatch?.matchScore ?? 0), marginLeft: 8 }}>
-                  {currentMatch?.matchScore ?? 0}%
-                </span>
+                {profileComplete ? (
+                  <span className="badge match-badge" style={{ backgroundColor: getMatchColor(currentMatch?.matchScore ?? 0), marginLeft: 8 }}>
+                    {currentMatch?.matchScore ?? 0}%
+                  </span>
+                ) : (
+                  <span className="badge match-badge incomplete" style={{ marginLeft: 8 }} title={MATCH_INCOMPLETE_LABEL}>
+                    {MATCH_INCOMPLETE_LABEL}
+                  </span>
+                )}
                 {isSaved(selectedOpportunity.id) && (
                   <span className={`badge status-badge ${(appStatuses[selectedOpportunity.id] ?? 'Saved').toLowerCase()}`} style={{ marginLeft: 8 }}>{appStatuses[selectedOpportunity.id] ?? 'Saved'}</span>
                 )}
@@ -1141,7 +1179,7 @@ function App() {
                 )}
               </div>
 
-              {currentMatch && currentMatch.matchReasons.length > 0 && (
+              {profileComplete && currentMatch && currentMatch.matchReasons.length > 0 && (
                 <div style={{ marginTop: 12 }}>
                   <strong>Why it matches:</strong>
                   <ul>
