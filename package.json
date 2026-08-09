@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "npm run dev:api & npm run dev:client",
+    "dev": "node scripts/dev.mjs",
     "dev:client": "vite",
     "dev:api": "node --import tsx server-dev.ts",
     "build": "tsc -b && vite build",

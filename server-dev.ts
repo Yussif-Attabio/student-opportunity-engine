@@ -10,6 +10,12 @@ import { existsSync } from 'node:fs'
 import path from 'node:path'
 import { config as loadEnv } from 'dotenv'
 import { getJobsFeed } from './server/jobs.js'
+import { getDatabase } from './server/db/client.js'
+import { opportunityFiltersSchema } from './server/opportunities/filters.js'
+import {
+  InvalidOpportunityCursorError,
+  queryOpportunities
+} from './server/opportunities/query.js'
 
 const envLocalPath = path.resolve(process.cwd(), '.env.local')
 const envPath = existsSync(envLocalPath) ? envLocalPath : path.resolve(process.cwd(), '.env')
@@ -174,6 +180,41 @@ const handleRequest = async (req: IncomingMessage, res: ServerResponse): Promise
     return
   }
 
+  if (req.method === 'GET' && req.url?.startsWith('/api/opportunities')) {
+    const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`)
+    const query = Object.fromEntries(url.searchParams.entries())
+    const parsed = opportunityFiltersSchema.safeParse(query)
+
+    if (!parsed.success) {
+      res.writeHead(400)
+      res.end(JSON.stringify({ error: 'Invalid filters', issues: parsed.error.issues }))
+      return
+    }
+
+    try {
+      const result = await queryOpportunities(getDatabase(), parsed.data)
+      res.setHeader('Cache-Control', 'public, max-age=60')
+      res.writeHead(200)
+      res.end(JSON.stringify(result))
+    } catch (error) {
+      if (
+        error instanceof SyntaxError ||
+        error instanceof RangeError ||
+        error instanceof InvalidOpportunityCursorError
+      ) {
+        res.writeHead(400)
+        res.end(JSON.stringify({ error: 'Invalid pagination cursor' }))
+        return
+      }
+
+      const message = error instanceof Error ? error.message : 'Unable to load opportunities'
+      console.error(`[dev-server] Opportunities API failed: ${message}`)
+      res.writeHead(502)
+      res.end(JSON.stringify({ error: 'Unable to load opportunities' }))
+    }
+    return
+  }
+
   if (req.method === 'GET' && req.url?.startsWith('/api/jobs')) {
     try {
       const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`)
@@ -278,7 +319,8 @@ server.listen(PORT, () => {
   
   console.log(`[dev-server] API server listening on http://localhost:${PORT}`)
   console.log(`[dev-server] Handling POST /api/generate-guidance`)
-  console.log(`[dev-server] Handling GET /api/jobs`)
+    console.log(`[dev-server] Handling GET /api/jobs`)
+    console.log(`[dev-server] Handling GET /api/opportunities`)
   console.log('[AI] Provider: Groq')
   
   if (!config.valid) {
