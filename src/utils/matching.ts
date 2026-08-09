@@ -1,4 +1,4 @@
-import type { Opportunity, StudentProfile } from '../types'
+import type { Opportunity, StudentProfile } from '../types.js'
 
 export interface MatchResult {
   matchScore: number
