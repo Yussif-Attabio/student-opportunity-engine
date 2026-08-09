@@ -39,6 +39,7 @@
   border-bottom: 2px solid var(--border);
   padding: 0 20px;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .nav-tab {
@@ -221,6 +222,13 @@
   /* uses .badge styling for consistency */
 }
 
+.match-badge.incomplete {
+  background: #6b7280;
+  white-space: normal;
+  line-height: 1.3;
+  max-width: 170px;
+}
+
 .opp-description {
   font-size: 14px;
   color: var(--text);
@@ -346,6 +354,19 @@
   border-radius: 10px;
   border: 1px solid var(--border);
   background: var(--social-bg);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.deadline-item:hover,
+.deadline-item:focus-visible {
+  border-color: var(--accent);
+  box-shadow: var(--shadow);
+}
+
+.deadline-item:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 .deadline-left {
@@ -450,8 +471,13 @@
 }
 
 @media (max-width: 768px) {
-  .deadline-left { max-width: 55%; }
-  .deadline-right { align-items: flex-end; }
+  .deadline-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .deadline-left { max-width: 100%; }
+  .deadline-right { align-items: flex-start; width: 100%; }
 }
 
 .deadlines-controls {
@@ -1185,6 +1211,10 @@
 
 @media (max-width: 768px) {
   .modal-panel { width: 96%; padding: 16px; }
+  .modal-header { flex-wrap: wrap; }
+  .modal-header-right { flex-wrap: wrap; }
+  .modal-footer { flex-wrap: wrap; }
+  .modal-footer > * { flex: 1 1 auto; }
 }
 
 .reasons-label {
@@ -1466,7 +1496,42 @@
 
   .card-header-right {
     flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: flex-end;
     gap: 8px;
+  }
+
+  .filters-bar {
+    flex-direction: column;
+  }
+
+  .filters-bar > * {
+    width: 100%;
+    flex: none;
+    box-sizing: border-box;
+  }
+
+  .dashboard-summary {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .dash-item {
+    min-width: 0;
+  }
+
+  .dash-helper {
+    grid-column: 1 / -1;
+  }
+
+  .search-input,
+  .filter-select,
+  .profile-form input,
+  .profile-form select,
+  .profile-form textarea,
+  .status-select {
+    font-size: 16px;
   }
 
   .opp-type-badge {
